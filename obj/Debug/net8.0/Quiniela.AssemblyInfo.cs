@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Quiniela")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7cfb62e436a29494bde0000415f695a5941fbb8e")]
 [assembly: System.Reflection.AssemblyProductAttribute("Quiniela")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Quiniela")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
