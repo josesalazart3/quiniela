@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres_quiniela
+    restart: always
+    environment:
+      POSTGRES_DB: quiniela
+      POSTGRES_USER: quiniela
+      POSTGRES_PASSWORD: quiniela
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api_quiniela
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=quiniela;Username=quiniela;Password=quiniela"
+    ports:
+      - "8080:8080"
+volumes:
+  postgres_data:
