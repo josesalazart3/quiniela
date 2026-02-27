@@ -3074,19 +3074,19 @@
     ]
   },
   "packageFolders": {
-    "/home/robertin/.nuget/packages/": {}
+    "C:\\Users\\musag\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/robertin/Desktop/Quiniela/Quiniela.csproj",
+      "projectUniqueName": "C:\\Users\\musag\\Downloads\\quiniela\\Quiniela.csproj",
       "projectName": "Quiniela",
-      "projectPath": "/home/robertin/Desktop/Quiniela/Quiniela.csproj",
-      "packagesPath": "/home/robertin/.nuget/packages/",
-      "outputPath": "/home/robertin/Desktop/Quiniela/obj/",
+      "projectPath": "C:\\Users\\musag\\Downloads\\quiniela\\Quiniela.csproj",
+      "packagesPath": "C:\\Users\\musag\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\musag\\Downloads\\quiniela\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/robertin/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\musag\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -3104,6 +3104,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -3156,7 +3161,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.124/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.416/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
