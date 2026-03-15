@@ -9,17 +9,17 @@ namespace Quiniela.Repositories
     {
         private readonly AppDbContext _context = context;
 
-        public async Task<User?> GetByUsernameAsync(string username)
+        public async Task<User?> GetByEmailAsync(string email)
         {
             return await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == username);
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public async Task<User?> GetByUsernameWithRoleAsync(string username)
+        public async Task<User?> GetByEmailWithRoleAsync(string email)
         {
             return await _context.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Username == username);
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<User> AddUserAsync(User user)
@@ -39,18 +39,24 @@ namespace Quiniela.Repositories
             var existing = await _context.Users.FindAsync(user.Id);
             if (existing == null) return null;
 
-            existing.Username = user.Username;
-            existing.Password = user.Password;
             existing.Email = user.Email;
             existing.FirstName = user.FirstName;
             existing.LastName = user.LastName;
             existing.UpdatedAt = user.UpdatedAt;
-            //existing.UpdatedBy = user.UpdatedBy;
 
             await _context.SaveChangesAsync();
             return existing;
         }
+
+        public async Task<bool> UpdatePasswordAsync(int id, string hashedPassword)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return false;
+
+            user.Password = hashedPassword;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
-
-
 }

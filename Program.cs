@@ -37,6 +37,8 @@ var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key no configurada");
 var keyBytes = Encoding.UTF8.GetBytes(secretKey);
 
+Console.WriteLine(BCrypt.Net.BCrypt.HashPassword("admin123"));
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -77,6 +79,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
+
+
 
 app.UseAuthentication();
 app.UseAuthorization();

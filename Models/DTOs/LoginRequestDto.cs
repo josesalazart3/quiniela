@@ -4,9 +4,9 @@ namespace Quiniela.Models.DTOs
 {
     public class LoginRequestDto
     {
-        [Required(ErrorMessage = "El username es obligatorio")]
-        [MinLength(3, ErrorMessage = "Mínimo 3 caracteres")]
-        public required string Username { get; set; }
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "El email no tiene un formato válido")]
+        public required string Email { get; set; }
 
         [Required(ErrorMessage = "El password es obligatorio")]
         [MinLength(6, ErrorMessage = "Mínimo 6 caracteres")]

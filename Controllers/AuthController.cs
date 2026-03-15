@@ -47,20 +47,28 @@ namespace Quiniela.Controllers
         }
 
         [HttpPut("reset/{id:int}")]
-        //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ResetPassoword(int id, [FromBody] ResetPasswordRequestDto dto)
+        public async Task<IActionResult> ResetPassword(int id, [FromBody] ResetPasswordRequestDto dto)
         {
             var encryptedUserId = User.FindFirst("Id")?.Value;
             if (string.IsNullOrEmpty(encryptedUserId))
                 return Unauthorized();
 
-            var decryptedUserId = _cryptoHelper.Decrypt(encryptedUserId);
-            if (!int.TryParse(decryptedUserId, out int userId))
+            if (!int.TryParse(_cryptoHelper.Decrypt(encryptedUserId), out int userId))
                 return Unauthorized();
 
-            var message = await _authService.ResetPasswordAsync(id, dto, userId);
-
-            return Ok(new { message });
+            try
+            {
+                var message = await _authService.ResetPasswordAsync(id, dto, userId);
+                return Ok(new { message });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
     }

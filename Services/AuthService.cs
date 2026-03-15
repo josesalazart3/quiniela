@@ -10,7 +10,6 @@ using System.Text;
 
 namespace Quiniela.Services
 {
-
     public class AuthService(IUserRepository userRepository, IRoleRepository roleRepository,
     IConfiguration config, CryptoHelper cryptoHelper) : IAuthService
     {
@@ -21,7 +20,7 @@ namespace Quiniela.Services
 
         public async Task<LoginResponseDto?> AuthenticateAsync(LoginRequestDto request)
         {
-            var user = await _userRepository.GetByUsernameWithRoleAsync(request.Username);
+            var user = await _userRepository.GetByEmailWithRoleAsync(request.Email);
             if (user == null)
                 return null;
 
@@ -29,48 +28,58 @@ namespace Quiniela.Services
                 return null;
 
             var token = GenerateJwtToken(user);
-
-            string roleName = "";
-            if (user.Role != null)
-            {
-                roleName = user.Role.Name;
-            }
-
-            RoleDto roleDto = new()
-            {
-                Name = roleName
-            };
+            var roleName = user.Role?.Name ?? "";
 
             return new LoginResponseDto
             {
-                Username = user.Username,
-                Role = roleDto,
+                Email = user.Email,
+                FullName = $"{user.FirstName} {user.LastName}".Trim(),
+                Role = new RoleDto { Name = roleName },
                 Token = token
             };
         }
 
-        public async Task<string?> RegisterAsync(RegisterRequestDto request)
+        public async Task<string> RegisterAsync(RegisterRequestDto request)
         {
-            var existingUser = await _userRepository.GetByUsernameAsync(request.Username);
+            var existingUser = await _userRepository.GetByEmailAsync(request.Email);
             if (existingUser != null)
-                throw new InvalidOperationException("El username ya está en uso");
+                throw new InvalidOperationException("El email ya está en uso");
 
-
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
             var user = new User
             {
-                Username = request.Username,
-                Password = hashedPassword,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 Email = request.Email,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 RoleId = 2,
                 CreatedAt = DateTime.UtcNow
-
             };
 
             await _userRepository.AddUserAsync(user);
             return "Usuario registrado correctamente";
+        }
+
+        public async Task<string> ResetPasswordAsync(int id, ResetPasswordRequestDto request, int requestingUserId)
+        {
+            var requestingUser = await _userRepository.GetUserByIdAsync(requestingUserId);
+            if (requestingUser == null)
+                throw new UnauthorizedAccessException("Usuario no autorizado");
+
+            bool isAdmin = requestingUser.RoleId == 1;  // SystemAdmin
+            bool isOwnAccount = requestingUserId == id;
+
+            if (!isAdmin && !isOwnAccount)
+                throw new UnauthorizedAccessException("No tienes permiso para resetear la contraseña de otro usuario");
+
+            var targetUser = await _userRepository.GetUserByIdAsync(id);
+            if (targetUser == null)
+                throw new InvalidOperationException("El usuario especificado no existe");
+
+            var updated = await _userRepository.UpdatePasswordAsync(id, BCrypt.Net.BCrypt.HashPassword(request.NewPassword));
+            if (!updated)
+                throw new InvalidOperationException("Error al actualizar la contraseña");
+
+            return "Contraseña actualizada correctamente";
         }
 
         private string GenerateJwtToken(User user)
@@ -81,16 +90,11 @@ namespace Quiniela.Services
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            string roleName = "";
-            if (user.Role != null)
-            {
-                roleName = user.Role.Name;
-            }
+            var roleName = user.Role?.Name ?? "";
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Name, user.Email),
                 new Claim(ClaimTypes.Role, roleName),
                 new Claim("Id", _cryptoHelper.Encrypt(user.Id.ToString()))
             };
@@ -104,24 +108,8 @@ namespace Quiniela.Services
                 expires: DateTime.UtcNow.AddMinutes(expiresInMinutes),
                 signingCredentials: creds
             );
+
             return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        public async Task<string> ResetPasswordAsync(int id, ResetPasswordRequestDto request, int userId) //-> userId por si se me anotoja que pueda actualizar algun admin
-        {
-            var user = await _userRepository.GetUserByIdAsync(id);
-            if (user == null)
-                throw new InvalidOperationException("El usuario especificado no existe");
-
-            user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-            user.UpdatedAt = DateTime.UtcNow;
-
-
-            var updated = await _userRepository.UpdateUserAsync(user);
-            if (updated == null)
-                throw new InvalidOperationException("Error al actualizar el usuario");
-
-            return "Password reseteada correctamente";
         }
     }
 }

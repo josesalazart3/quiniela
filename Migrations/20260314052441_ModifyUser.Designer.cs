@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Quiniela.Data;
@@ -11,9 +12,11 @@ using Quiniela.Data;
 namespace Quiniela.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260314052441_ModifyUser")]
+    partial class ModifyUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,54 +24,6 @@ namespace Quiniela.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Quiniela.Models.ClasificacionGrupo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DiferenciaGoles")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Empatados")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("EquipoId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Ganados")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("GolesAFavor")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("GolesEnContra")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("GrupoId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("PartidosJugados")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Perdidos")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Puntos")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EquipoId");
-
-                    b.HasIndex("GrupoId", "EquipoId")
-                        .IsUnique();
-
-                    b.ToTable("ClasificacionGrupos");
-                });
 
             modelBuilder.Entity("Quiniela.Models.Equipo", b =>
                 {
@@ -120,7 +75,7 @@ namespace Quiniela.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Estadios");
+                    b.ToTable("Estadio");
                 });
 
             modelBuilder.Entity("Quiniela.Models.Fase", b =>
@@ -185,52 +140,6 @@ namespace Quiniela.Migrations
                     b.ToTable("GrupoEquipos");
                 });
 
-            modelBuilder.Entity("Quiniela.Models.InvitacionLiga", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("EmailInvitado")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Estado")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("FechaEnvio")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("FechaExpiracion")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("FechaRespuesta")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("LigaId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LigaId");
-
-                    b.HasIndex("Token")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("InvitacionesLiga");
-                });
-
             modelBuilder.Entity("Quiniela.Models.Liga", b =>
                 {
                     b.Property<int>("Id")
@@ -281,9 +190,6 @@ namespace Quiniela.Migrations
                     b.Property<bool>("EsAdmin")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("Estado")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("FechaUnion")
                         .HasColumnType("timestamp with time zone");
 
@@ -309,16 +215,10 @@ namespace Quiniela.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("DescripcionLocal")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DescripcionVisitante")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("EquipoLocalId")
+                    b.Property<int>("EquipoLocalId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("EquipoVisitanteId")
+                    b.Property<int>("EquipoVisitanteId")
                         .HasColumnType("integer");
 
                     b.Property<int>("EstadioId")
@@ -403,7 +303,7 @@ namespace Quiniela.Migrations
                     b.HasIndex("UserId", "LigaId", "PartidoId")
                         .IsUnique();
 
-                    b.ToTable("Predicciones");
+                    b.ToTable("Prediccion");
                 });
 
             modelBuilder.Entity("Quiniela.Models.Role", b =>
@@ -433,13 +333,13 @@ namespace Quiniela.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 3, 14, 5, 24, 40, 912, DateTimeKind.Utc).AddTicks(4924),
                             Name = "SystemAdmin"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 3, 14, 5, 24, 40, 912, DateTimeKind.Utc).AddTicks(4985),
                             Name = "User"
                         });
                 });
@@ -527,32 +427,13 @@ namespace Quiniela.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 3, 14, 5, 24, 41, 30, DateTimeKind.Utc).AddTicks(2708),
                             Email = "admin@quiniela.com",
                             FirstName = "System",
                             LastName = "Admin",
-                            Password = "quiniela",
+                            Password = "$2a$11$HxOK/pccSttau.awnLGHde42fCb7Re6AATQjWl8AaC8PPpS3lSOD6",
                             RoleId = 1
                         });
-                });
-
-            modelBuilder.Entity("Quiniela.Models.ClasificacionGrupo", b =>
-                {
-                    b.HasOne("Quiniela.Models.Equipo", "Equipo")
-                        .WithMany()
-                        .HasForeignKey("EquipoId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Quiniela.Models.Grupo", "Grupo")
-                        .WithMany()
-                        .HasForeignKey("GrupoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Equipo");
-
-                    b.Navigation("Grupo");
                 });
 
             modelBuilder.Entity("Quiniela.Models.Fase", b =>
@@ -594,24 +475,6 @@ namespace Quiniela.Migrations
                     b.Navigation("Equipo");
 
                     b.Navigation("Grupo");
-                });
-
-            modelBuilder.Entity("Quiniela.Models.InvitacionLiga", b =>
-                {
-                    b.HasOne("Quiniela.Models.Liga", "Liga")
-                        .WithMany("Invitaciones")
-                        .HasForeignKey("LigaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Quiniela.Models.User", "User")
-                        .WithMany("Invitaciones")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Liga");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Quiniela.Models.Liga", b =>
@@ -657,23 +520,25 @@ namespace Quiniela.Migrations
                     b.HasOne("Quiniela.Models.Equipo", "EquipoLocal")
                         .WithMany()
                         .HasForeignKey("EquipoLocalId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Quiniela.Models.Equipo", "EquipoVisitante")
                         .WithMany()
                         .HasForeignKey("EquipoVisitanteId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Quiniela.Models.Estadio", "Estadio")
                         .WithMany("Partidos")
                         .HasForeignKey("EstadioId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Quiniela.Models.Fase", "Fase")
                         .WithMany("Partidos")
                         .HasForeignKey("FaseId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Quiniela.Models.Grupo", "Grupo")
@@ -684,7 +549,7 @@ namespace Quiniela.Migrations
                     b.HasOne("Quiniela.Models.Torneo", "Torneo")
                         .WithMany("Partidos")
                         .HasForeignKey("TorneoId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("EquipoLocal");
@@ -705,19 +570,19 @@ namespace Quiniela.Migrations
                     b.HasOne("Quiniela.Models.Liga", "Liga")
                         .WithMany("Predicciones")
                         .HasForeignKey("LigaId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Quiniela.Models.Partido", "Partido")
                         .WithMany("Predicciones")
                         .HasForeignKey("PartidoId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Quiniela.Models.User", "User")
                         .WithMany("Predicciones")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Liga");
@@ -762,8 +627,6 @@ namespace Quiniela.Migrations
 
             modelBuilder.Entity("Quiniela.Models.Liga", b =>
                 {
-                    b.Navigation("Invitaciones");
-
                     b.Navigation("LigaMiembros");
 
                     b.Navigation("Predicciones");
@@ -792,8 +655,6 @@ namespace Quiniela.Migrations
 
             modelBuilder.Entity("Quiniela.Models.User", b =>
                 {
-                    b.Navigation("Invitaciones");
-
                     b.Navigation("LigaMiembros");
 
                     b.Navigation("LigasCreadas");

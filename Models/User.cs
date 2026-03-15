@@ -6,9 +6,9 @@ namespace Quiniela.Models
     {
         public int Id {get; set;}
 
-        [Required]
-        [MaxLength(50)]
-        public required string Username {get; set;}
+        //[Required]
+        //[MaxLength(50)]
+        //public required string Username {get; set;}
 
         [Required]
         [MaxLength(255)]
@@ -30,5 +30,12 @@ namespace Quiniela.Models
         [Required]
         public required int RoleId {get; set;}
         public Role? Role {get; set;}
+        public ICollection<Liga> LigasCreadas {get; set;} = new List<Liga>();
+        public ICollection<LigaMiembro> LigaMiembros {get; set;} = new List<LigaMiembro>();
+
+        public ICollection<Prediccion> Predicciones { get; set; } = new List<Prediccion>();
+        public ICollection<InvitacionLiga> Invitaciones { get; set; } = new List<InvitacionLiga>();
+
+
     }
 }
