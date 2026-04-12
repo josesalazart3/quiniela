@@ -1,13 +1,12 @@
-namespace Quiniela.Models
+namespace Quiniela.Models.DTOs
 {
-    public class Equipo
+    public class EquipoReadDto
     {
         public int Id { get; set; }
-        public required string Nombre { get; set; }
+        public string Nombre { get; set; } = string.Empty;
         public string CodigoFifa { get; set; } = string.Empty;
         public string BanderaUrl { get; set; } = string.Empty;
         public string Entrenador { get; set; } = string.Empty;
         public string Capitan { get; set; } = string.Empty;
-        public ICollection<GrupoEquipo> Grupos { get; set; } = new List<GrupoEquipo>();
     }
 }

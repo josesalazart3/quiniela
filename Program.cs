@@ -21,11 +21,13 @@ builder.Services.AddSingleton(provider =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+//Console.WriteLine(BCrypt.Net.BCrypt.HashPassword("quiniela"));
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
     .LogTo(Console.WriteLine, LogLevel.Information)
-    .EnableSensitiveDataLogging());
+    .EnableSensitiveDataLogging(builder.Environment.IsDevelopment()));
 
 
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
@@ -37,7 +39,7 @@ var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key no configurada");
 var keyBytes = Encoding.UTF8.GetBytes(secretKey);
 
-Console.WriteLine(BCrypt.Net.BCrypt.HashPassword("admin123"));
+
 
 builder.Services.AddAuthentication(options =>
 {
@@ -50,7 +52,7 @@ builder.Services.AddAuthentication(options =>
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = false,
+        ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
@@ -61,6 +63,19 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(builder.Configuration["Cors:AllowedOrigin"] ?? "http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+
 
 var app = builder.Build();
 
@@ -78,10 +93,11 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+    await DatosMundial.SeedAsync(db);
 }
 
 
-
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -65,7 +65,7 @@ namespace Quiniela.Services
             if (requestingUser == null)
                 throw new UnauthorizedAccessException("Usuario no autorizado");
 
-            bool isAdmin = requestingUser.RoleId == 1;  // SystemAdmin
+            bool isAdmin = requestingUser.RoleId == 1;  // Administrador
             bool isOwnAccount = requestingUserId == id;
 
             if (!isAdmin && !isOwnAccount)

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Quiniela.Data;
@@ -11,9 +12,11 @@ using Quiniela.Data;
 namespace Quiniela.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260315042030_NewPasswordAdmin")]
+    partial class NewPasswordAdmin
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -82,15 +85,7 @@ namespace Quiniela.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Capitan")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("CodigoFifa")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Entrenador")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -442,7 +437,7 @@ namespace Quiniela.Migrations
                         {
                             Id = 1,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Name = "Administrador"
+                            Name = "SystemAdmin"
                         },
                         new
                         {

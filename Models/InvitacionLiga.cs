@@ -13,7 +13,7 @@ namespace Quiniela.Models
         public int? UserId { get; set; }
         public User? User { get; set; }
 
-        public string Token { get; set; } = string.Empty; // GUID para el link de invitación
+        public string Token { get; set; } = string.Empty;
 
         public EstadoInvitacion Estado { get; set; } = EstadoInvitacion.Pendiente;
 

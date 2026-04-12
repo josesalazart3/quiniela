@@ -21,7 +21,7 @@ namespace Quiniela.Data
         public DbSet<InvitacionLiga> InvitacionesLiga => Set<InvitacionLiga>();
 
 
-        private const string AdminPasswordHash = "quiniela";
+        private const string AdminPasswordHash = "$2a$11$D13huptFPV/i1px.II67.uvGztGXJfYqusE2hahkgCFJ0R3oPVVre";
 
         private static readonly DateTime SeedDate = new(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -184,7 +184,7 @@ namespace Quiniela.Data
 
             // SEED DATA
             modelBuilder.Entity<Role>().HasData(
-                new Role { Id = 1, Name = "SystemAdmin", CreatedAt = SeedDate },
+                new Role { Id = 1, Name = "Administrador", CreatedAt = SeedDate },
                 new Role { Id = 2, Name = "User", CreatedAt = SeedDate }
             );
 
