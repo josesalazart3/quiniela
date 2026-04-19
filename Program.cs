@@ -51,6 +51,18 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITorneoRepository, TorneoRepository>();
 builder.Services.AddScoped<ITorneoService, TorneoService>();
+builder.Services.AddScoped<IEstadioRepository, EstadioRepository>();
+builder.Services.AddScoped<IEstadioService, EstadioService>();
+builder.Services.AddScoped<IEquipoRepository, EquipoRepository>();
+builder.Services.AddScoped<IEquipoService, EquipoService>();
+builder.Services.AddScoped<IFaseRepository, FaseRepository>();
+builder.Services.AddScoped<IFaseService, FaseService>();
+builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
+builder.Services.AddScoped<IGrupoService, GrupoService>();
+builder.Services.AddScoped<IClasificacionGrupoRepository, ClasificacionGrupoRepository>();
+builder.Services.AddScoped<IPartidoRepository, PartidoRepository>();
+builder.Services.AddScoped<IPartidoService, PartidoService>();
+builder.Services.AddScoped<BracketService>();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key no configurada");
