@@ -9,6 +9,7 @@ using Quiniela.Services;
 using Quiniela.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Quiniela.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -102,6 +103,7 @@ using (var scope = app.Services.CreateScope())
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.MapControllers();
 app.Run();
