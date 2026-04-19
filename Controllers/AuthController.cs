@@ -16,7 +16,10 @@ namespace Quiniela.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
-            var response = await _authService.AuthenticateAsync(request);
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var userAgent = Request.Headers.UserAgent.ToString();
+
+            var response = await _authService.AuthenticateAsync(request, ip, userAgent);
             if (response == null)
                 return Unauthorized(new { error = "Credenciales inválidas" });
 
@@ -59,6 +62,19 @@ namespace Quiniela.Controllers
             if (profile == null) return NotFound();
 
             return Ok(profile);
+        }
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            var encrypted = User.FindFirst("Id")?.Value;
+            if (string.IsNullOrEmpty(encrypted)) return Unauthorized();
+
+            if (!int.TryParse(_cryptoHelper.Decrypt(encrypted), out int userId))
+                return Unauthorized();
+
+            await _authService.LogoutAsync(userId);
+            return Ok(new { message = "Sesión cerrada correctamente" });
         }
     }
 }

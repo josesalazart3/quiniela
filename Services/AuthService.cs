@@ -11,24 +11,41 @@ using System.Text;
 namespace Quiniela.Services
 {
     public class AuthService(IUserRepository userRepository, IRoleRepository roleRepository,
-    IConfiguration config, CryptoHelper cryptoHelper) : IAuthService
+    IConfiguration config, CryptoHelper cryptoHelper, IUserSessionRepository sessionRepository) : IAuthService
     {
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IRoleRepository _roleRepository = roleRepository;
         private readonly IConfiguration _config = config;
         private readonly CryptoHelper _cryptoHelper = cryptoHelper;
+        private readonly IUserSessionRepository _sessionRepository = sessionRepository;
 
-        public async Task<LoginResponseDto?> AuthenticateAsync(LoginRequestDto request)
+
+
+
+        public async Task<LoginResponseDto?> AuthenticateAsync(LoginRequestDto request, string ipOrigen, string userAgent)
         {
             var user = await _userRepository.GetByEmailWithRoleAsync(request.Email);
-            if (user == null)
-                return null;
+            if (user == null) return null;
 
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 return null;
 
+            var jwtSetting = _config.GetSection("Jwt");
+            var expiresInMinutes = Convert.ToDouble(jwtSetting["ExpiresInMinutes"] ?? "60");
+
+            // Registrar sesión
+            await _sessionRepository.CreateSessionAsync(new UserSession
+            {
+                UserId = user.Id,
+                IpOrigen = ipOrigen,
+                UserAgent = userAgent,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(expiresInMinutes),
+                Estado = Enums.EstadoSesion.Activa
+            });
+
             var token = GenerateJwtToken(user);
-            var roleName = user.Role?.Name ?? "";
+            var roleName = user.Role?.Name ?? string.Empty;
 
             return new LoginResponseDto
             {
@@ -94,6 +111,12 @@ namespace Quiniela.Services
                 FullName = $"{user.FirstName} {user.LastName}".Trim(),
                 Role = user.Role?.Name ?? string.Empty
             };
+        }
+        public async Task LogoutAsync(int userId)
+        {
+            var session = await _sessionRepository.GetActiveSessionAsync(userId);
+            if (session != null)
+                await _sessionRepository.CloseSessionAsync(session.Id);
         }
 
         private string GenerateJwtToken(User user)
