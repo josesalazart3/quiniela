@@ -63,6 +63,11 @@ builder.Services.AddScoped<IClasificacionGrupoRepository, ClasificacionGrupoRepo
 builder.Services.AddScoped<IPartidoRepository, PartidoRepository>();
 builder.Services.AddScoped<IPartidoService, PartidoService>();
 builder.Services.AddScoped<BracketService>();
+builder.Services.AddScoped<IPrediccionRepository, PrediccionRepository>();
+builder.Services.AddScoped<IPrediccionService, PrediccionService>();
+builder.Services.AddScoped<ILigaRepository, LigaRepository>();
+builder.Services.AddScoped<ILigaMiembroRepository, LigaMiembroRepository>();
+builder.Services.AddScoped<ILigaService, LigaService>();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key no configurada");
