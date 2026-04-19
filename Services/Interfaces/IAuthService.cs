@@ -7,5 +7,6 @@ namespace Quiniela.Services.Interfaces
         Task<LoginResponseDto?> AuthenticateAsync(LoginRequestDto request);
         Task<string> RegisterAsync(RegisterRequestDto request);
         Task<string> ResetPasswordAsync(int id, ResetPasswordRequestDto request, int requestingUserId);
+        Task<UserProfileDto?> GetProfileAsync(int userId);
     }
 }
