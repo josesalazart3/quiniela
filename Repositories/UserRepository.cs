@@ -65,5 +65,15 @@ namespace Quiniela.Repositories
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
+
+        public async Task<bool> DeleteUserAsync(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return false;
+
+            user.DeletedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

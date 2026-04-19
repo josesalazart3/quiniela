@@ -36,7 +36,5 @@ namespace Quiniela.Models
         public ICollection<Prediccion> Predicciones { get; set; } = new List<Prediccion>();
         public ICollection<InvitacionLiga> Invitaciones { get; set; } = new List<InvitacionLiga>();
         public DateTime? DeletedAt { get; set; }
-
-
     }
 }

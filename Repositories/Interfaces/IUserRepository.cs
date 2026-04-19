@@ -12,5 +12,7 @@ namespace Quiniela.Repositories.Interfaces
         Task<bool> UpdatePasswordAsync(int id, string hashedPassword);
 
         Task<User?> GetUserByIdWithRoleAsync(int id);
+        Task<bool> DeleteUserAsync(int id);
+
     }
 }
