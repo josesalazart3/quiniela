@@ -18,6 +18,9 @@ namespace Quiniela.Models
 
         public EstadoMiembro Estado { get; set; } = EstadoMiembro.Pendiente;
 
+        public DateTime? DeletedAt { get; set; }
+
+
     }
 
 

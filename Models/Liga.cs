@@ -25,5 +25,8 @@ namespace Quiniela.Models
 
         public ICollection<InvitacionLiga> Invitaciones { get; set; } = new List<InvitacionLiga>();
 
+        public DateTime? DeletedAt { get; set; }
+
+
     }
 }
