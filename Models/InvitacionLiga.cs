@@ -20,6 +20,9 @@ namespace Quiniela.Models
         public DateTime FechaEnvio { get; set; } = DateTime.UtcNow;
         public DateTime? FechaExpiracion { get; set; }
         public DateTime? FechaRespuesta { get; set; }
+
+        public DateTime? DeletedAt { get; set; }
+
     }
 
 }

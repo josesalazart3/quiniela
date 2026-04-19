@@ -25,8 +25,17 @@ namespace Quiniela.Data
 
         private static readonly DateTime SeedDate = new(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<User>().HasQueryFilter(u => u.DeletedAt == null);
+            modelBuilder.Entity<Liga>().HasQueryFilter(l => l.DeletedAt == null);
+            modelBuilder.Entity<Prediccion>().HasQueryFilter(p => p.DeletedAt == null);
+            modelBuilder.Entity<LigaMiembro>().HasQueryFilter(lm => lm.DeletedAt == null);
+            modelBuilder.Entity<InvitacionLiga>().HasQueryFilter(i => i.DeletedAt == null);
+            modelBuilder.Entity<Partido>().HasQueryFilter(p => p.DeletedAt == null);
 
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Role)
@@ -114,7 +123,7 @@ namespace Quiniela.Data
                 .HasForeignKey(c => c.EquipoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-  
+
             modelBuilder.Entity<ClasificacionGrupo>()
                 .HasIndex(c => new { c.GrupoId, c.EquipoId })
                 .IsUnique();

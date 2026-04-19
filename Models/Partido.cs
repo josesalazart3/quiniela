@@ -39,5 +39,7 @@ namespace Quiniela.Models
         public bool Finalizado { get; set; } = false;
 
         public ICollection<Prediccion> Predicciones { get; set; } = new List<Prediccion>();
+        public DateTime? DeletedAt { get; set; }
+
     }
 }
