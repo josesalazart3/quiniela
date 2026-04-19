@@ -10,10 +10,24 @@ using Quiniela.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Quiniela.Middlewares;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(e => e.Value?.Errors.Count > 0)
+                .SelectMany(e => e.Value!.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+
+            return new BadRequestObjectResult(new { error = string.Join(", ", errors) });
+        };
+    });
 builder.Services.AddSingleton(provider =>
 {
     string key = "62219311522870687600240042448129"; // 32 chars

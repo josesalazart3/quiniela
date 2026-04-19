@@ -82,6 +82,20 @@ namespace Quiniela.Services
             return "Contraseña actualizada correctamente";
         }
 
+        public async Task<UserProfileDto?> GetProfileAsync(int userId)
+        {
+            var user = await _userRepository.GetUserByIdWithRoleAsync(userId);
+            if (user == null) return null;
+
+            return new UserProfileDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FullName = $"{user.FirstName} {user.LastName}".Trim(),
+                Role = user.Role?.Name ?? string.Empty
+            };
+        }
+
         private string GenerateJwtToken(User user)
         {
             var jwtSetting = _config.GetSection("Jwt");

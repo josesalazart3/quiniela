@@ -58,5 +58,12 @@ namespace Quiniela.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<User?> GetUserByIdWithRoleAsync(int id)
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == id);
+        }
     }
 }
