@@ -68,6 +68,8 @@ builder.Services.AddScoped<IPrediccionService, PrediccionService>();
 builder.Services.AddScoped<ILigaRepository, LigaRepository>();
 builder.Services.AddScoped<ILigaMiembroRepository, LigaMiembroRepository>();
 builder.Services.AddScoped<ILigaService, LigaService>();
+builder.Services.AddScoped<IUserSessionRepository, UserSessionRepository>();
+
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key no configurada");

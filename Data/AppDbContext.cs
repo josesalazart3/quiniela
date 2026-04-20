@@ -19,6 +19,8 @@ namespace Quiniela.Data
         public DbSet<Estadio> Estadios => Set<Estadio>();
         public DbSet<ClasificacionGrupo> ClasificacionGrupos => Set<ClasificacionGrupo>();
         public DbSet<InvitacionLiga> InvitacionesLiga => Set<InvitacionLiga>();
+        public DbSet<UserSession> UserSessions => Set<UserSession>();
+
 
 
         private const string AdminPasswordHash = "$2a$11$D13huptFPV/i1px.II67.uvGztGXJfYqusE2hahkgCFJ0R3oPVVre";
@@ -209,6 +211,12 @@ namespace Quiniela.Data
                     CreatedAt = SeedDate
                 }
             );
+
+            modelBuilder.Entity<UserSession>()
+                .HasOne(s => s.User)
+                .WithMany(u => u.Sesiones)
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
