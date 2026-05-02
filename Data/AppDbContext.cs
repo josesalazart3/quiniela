@@ -20,6 +20,7 @@ namespace Quiniela.Data
         public DbSet<ClasificacionGrupo> ClasificacionGrupos => Set<ClasificacionGrupo>();
         public DbSet<InvitacionLiga> InvitacionesLiga => Set<InvitacionLiga>();
         public DbSet<UserSession> UserSessions => Set<UserSession>();
+        public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
 
 
@@ -217,6 +218,23 @@ namespace Quiniela.Data
                 .WithMany(u => u.Sesiones)
                 .HasForeignKey(s => s.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+
+
+            modelBuilder.Entity<AuditLog>(entity =>
+            {
+                entity.ToTable("audit_logs");
+                entity.Property(e => e.Tabla).HasColumnName("tabla");
+                entity.Property(e => e.Operacion).HasColumnName("operacion");
+                entity.Property(e => e.ValorAnterior)
+                    .HasColumnName("valor_anterior")
+                    .HasColumnType("jsonb");
+                entity.Property(e => e.ValorNuevo)
+                    .HasColumnName("valor_nuevo")
+                    .HasColumnType("jsonb");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.FechaHora).HasColumnName("fecha_hora");
+            });
         }
     }
 }
