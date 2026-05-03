@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Quiniela.Middlewares;
 using Microsoft.AspNetCore.Mvc;
+using Quiniela.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,6 +75,9 @@ builder.Services.AddScoped<IInvitacionLigaRepository, InvitacionLigaRepository>(
 builder.Services.AddScoped<IInvitacionLigaService, InvitacionLigaService>();
 builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
+builder.Services.AddSignalR();
+builder.Services.AddScoped<INotificacionService, NotificacionService>();
+
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key no configurada");
@@ -111,7 +115,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(builder.Configuration["Cors:AllowedOrigin"] ?? "http://localhost:5173")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -143,4 +148,5 @@ app.UseAuthorization();
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.MapControllers();
+app.MapHub<QuinielaHub>("/hubs/quiniela");
 app.Run();

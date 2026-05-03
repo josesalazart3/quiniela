@@ -12,7 +12,8 @@ namespace Quiniela.Services
         IEstadioRepository estadioRepository,
         IClasificacionGrupoRepository clasificacionRepository,
         IPrediccionRepository prediccionRepository,
-        BracketService bracketService) : IPartidoService
+        BracketService bracketService,
+        INotificacionService notificacionService) : IPartidoService
     {
         private readonly IPartidoRepository _partidoRepository = partidoRepository;
         private readonly ITorneoRepository _torneoRepository = torneoRepository;
@@ -21,6 +22,8 @@ namespace Quiniela.Services
         private readonly IClasificacionGrupoRepository _clasificacionRepository = clasificacionRepository;
         private readonly IPrediccionRepository _prediccionRepository = prediccionRepository;
         private readonly BracketService _bracketService = bracketService;
+        private readonly INotificacionService _notificacionService = notificacionService;
+
 
 
         public async Task<PartidoReadDto> CreatePartidoAsync(PartidoCreateDto dto)
@@ -130,8 +133,16 @@ namespace Quiniela.Services
             // 2. Calcular puntos de predicciones
             await CalcularPuntosPrediccionesAsync(id, dto.GolesLocal, dto.GolesVisitante);
 
-            // 3. Actualizar bracket automáticamente ← NUEVO
+            // 3. Actualizar bracket automáticamente
             await _bracketService.ActualizarBracketAsync(partido, dto.GolesLocal, dto.GolesVisitante);
+
+            // 4. Notificar en tiempo real
+            await _notificacionService.NotificarResultadoPartidoAsync(partido.TorneoId, id);
+
+            var predicciones = await _prediccionRepository.GetPrediccionesByPartidoAsync(id);
+            var ligasAfectadas = predicciones.Select(p => p.LigaId).Distinct();
+            foreach (var ligaId in ligasAfectadas)
+                await _notificacionService.NotificarRankingLigaAsync(ligaId);
 
             var updatedWithDetails = await _partidoRepository.GetPartidoByIdWithDetailsAsync(id);
             return MapToReadDto(updatedWithDetails!);
