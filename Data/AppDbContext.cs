@@ -22,6 +22,9 @@ namespace Quiniela.Data
         public DbSet<UserSession> UserSessions => Set<UserSession>();
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
+        public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+
+
 
 
         private const string AdminPasswordHash = "$2a$11$D13huptFPV/i1px.II67.uvGztGXJfYqusE2hahkgCFJ0R3oPVVre";
@@ -218,7 +221,17 @@ namespace Quiniela.Data
                 .WithMany(u => u.Sesiones)
                 .HasForeignKey(s => s.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
 
+            modelBuilder.Entity<PasswordResetToken>()
+                .HasOne(p => p.User)
+                .WithMany(u => u.PasswordResetTokens)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PasswordResetToken>()
+                .HasIndex(p => p.Token)
+                .IsUnique();
 
 
             modelBuilder.Entity<AuditLog>(entity =>

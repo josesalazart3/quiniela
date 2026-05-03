@@ -69,6 +69,10 @@ builder.Services.AddScoped<ILigaRepository, LigaRepository>();
 builder.Services.AddScoped<ILigaMiembroRepository, LigaMiembroRepository>();
 builder.Services.AddScoped<ILigaService, LigaService>();
 builder.Services.AddScoped<IUserSessionRepository, UserSessionRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IInvitacionLigaRepository, InvitacionLigaRepository>();
+builder.Services.AddScoped<IInvitacionLigaService, InvitacionLigaService>();
+builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");

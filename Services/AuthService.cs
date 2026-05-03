@@ -11,13 +11,17 @@ using System.Text;
 namespace Quiniela.Services
 {
     public class AuthService(IUserRepository userRepository, IRoleRepository roleRepository,
-    IConfiguration config, CryptoHelper cryptoHelper, IUserSessionRepository sessionRepository) : IAuthService
+    IConfiguration config, CryptoHelper cryptoHelper, IUserSessionRepository sessionRepository, IPasswordResetTokenRepository passwordResetTokenRepository,
+    IEmailService emailService) : IAuthService
     {
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IRoleRepository _roleRepository = roleRepository;
         private readonly IConfiguration _config = config;
         private readonly CryptoHelper _cryptoHelper = cryptoHelper;
         private readonly IUserSessionRepository _sessionRepository = sessionRepository;
+
+        private readonly IPasswordResetTokenRepository _passwordResetTokenRepository = passwordResetTokenRepository;
+        private readonly IEmailService _emailService = emailService;
 
 
 
@@ -117,6 +121,50 @@ namespace Quiniela.Services
             var session = await _sessionRepository.GetActiveSessionAsync(userId);
             if (session != null)
                 await _sessionRepository.CloseSessionAsync(session.Id);
+        }
+
+        public async Task ForgotPasswordAsync(string email)
+        {
+            var user = await _userRepository.GetByEmailAsync(email);
+
+            // Si el usuario no existe no revelamos esa información por seguridad
+            if (user == null) return;
+
+            // Invalidar tokens anteriores
+            await _passwordResetTokenRepository.InvalidateAllUserTokensAsync(user.Id);
+
+            // Crear nuevo token válido por 1 hora
+            var resetToken = new PasswordResetToken
+            {
+                UserId = user.Id,
+                Token = Guid.NewGuid().ToString(),
+                ExpiresAt = DateTime.UtcNow.AddHours(1),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _passwordResetTokenRepository.CreateTokenAsync(resetToken);
+
+            // Enviar email
+            await _emailService.SendRecuperacionPasswordAsync(email, resetToken.Token);
+        }
+
+        public async Task RecoverPasswordAsync(RecoverPasswordDto dto)
+        {
+            var resetToken = await _passwordResetTokenRepository.GetValidTokenAsync(dto.Token);
+            if (resetToken == null)
+                throw new InvalidOperationException("El token es inválido o ha expirado");
+
+            // Actualizar contraseña
+            var updated = await _userRepository.UpdatePasswordAsync(
+                resetToken.UserId,
+                BCrypt.Net.BCrypt.HashPassword(dto.NewPassword)
+            );
+
+            if (!updated)
+                throw new InvalidOperationException("Error al actualizar la contraseña");
+
+            // Invalidar el token usado
+            await _passwordResetTokenRepository.InvalidateTokenAsync(resetToken.Id);
         }
 
         private string GenerateJwtToken(User user)
