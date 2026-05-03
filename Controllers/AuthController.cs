@@ -76,5 +76,20 @@ namespace Quiniela.Controllers
             await _authService.LogoutAsync(userId);
             return Ok(new { message = "Sesión cerrada correctamente" });
         }
+
+        [HttpPost("contraseña-olvidada")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            await _authService.ForgotPasswordAsync(dto.Email);
+            // Siempre retorna 200 aunque el email no exista — por seguridad
+            return Ok(new { message = "Si el email existe recibirás un correo con instrucciones" });
+        }
+
+        [HttpPost("recuperar-contraseña")]
+        public async Task<IActionResult> RecoverPassword([FromBody] RecoverPasswordDto dto)
+        {
+            await _authService.RecoverPasswordAsync(dto);
+            return Ok(new { message = "Contraseña actualizada correctamente" });
+        }
     }
 }

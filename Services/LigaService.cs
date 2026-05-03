@@ -9,11 +9,15 @@ namespace Quiniela.Services
     public class LigaService(
         ILigaRepository ligaRepository,
         ILigaMiembroRepository ligaMiembroRepository,
-        IUserRepository userRepository) : ILigaService
+        IUserRepository userRepository,
+        IEmailService emailService) : ILigaService
     {
         private readonly ILigaRepository _ligaRepository = ligaRepository;
         private readonly ILigaMiembroRepository _ligaMiembroRepository = ligaMiembroRepository;
         private readonly IUserRepository _userRepository = userRepository;
+
+        private readonly IEmailService _emailService = emailService;
+
 
         public async Task<LigaReadDto> CreateLigaAsync(LigaCreateDto dto, int userId)
         {
@@ -157,6 +161,14 @@ namespace Quiniela.Services
             miembro.Estado = dto.Aprobar ? EstadoMiembro.Aprobado : EstadoMiembro.Rechazado;
 
             var updated = await _ligaMiembroRepository.UpdateMiembroAsync(miembro);
+
+            if (dto.Aprobar && miembro.User?.Email != null)
+            {
+                var liga = await _ligaRepository.GetLigaByIdAsync(ligaId);
+                if (liga != null)
+                    await _emailService.SendAprobacionMiembroAsync(miembro.User.Email, liga.Nombre);
+            }
+
             return MapMiembroToReadDto(updated!);
         }
 

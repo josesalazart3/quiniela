@@ -11,5 +11,8 @@ namespace Quiniela.Services.Interfaces
         Task<LoginResponseDto?> AuthenticateAsync(LoginRequestDto request, string ipOrigen, string userAgent);
         Task LogoutAsync(int userId);
 
+        Task ForgotPasswordAsync(string email);
+        Task RecoverPasswordAsync(RecoverPasswordDto dto);
+
     }
 }

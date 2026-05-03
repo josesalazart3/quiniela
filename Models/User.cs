@@ -38,5 +38,8 @@ namespace Quiniela.Models
         public DateTime? DeletedAt { get; set; }
 
         public ICollection<UserSession> Sesiones { get; set; } = new List<UserSession>();
+
+        public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
+
     }
 }
