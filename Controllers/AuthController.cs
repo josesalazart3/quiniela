@@ -48,9 +48,9 @@ namespace Quiniela.Controllers
             return Ok(new { message });
         }
 
-        [HttpGet("me")]
+        [HttpGet("perfil")]
         [Authorize]
-        public async Task<IActionResult> Me()
+        public async Task<IActionResult> Perfil()
         {
             var encrypted = User.FindFirst("Id")?.Value;
             if (string.IsNullOrEmpty(encrypted)) return Unauthorized();

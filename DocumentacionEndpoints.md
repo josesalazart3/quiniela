@@ -93,7 +93,7 @@ POST /api/v1/auth/logout
 
 ### Perfil del usuario autenticado
 ```
-GET /api/v1/auth/me
+GET /api/v1/auth/perfil
 ```
 **Acceso:**  JWT requerido
 
