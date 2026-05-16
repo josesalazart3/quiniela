@@ -23,6 +23,8 @@ namespace Quiniela.Data
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+        public DbSet<PremioDistribuido> PremiosDistribuidos => Set<PremioDistribuido>();
+
 
 
 
@@ -221,7 +223,7 @@ namespace Quiniela.Data
                 .WithMany(u => u.Sesiones)
                 .HasForeignKey(s => s.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
+
 
             modelBuilder.Entity<PasswordResetToken>()
                 .HasOne(p => p.User)
@@ -232,6 +234,24 @@ namespace Quiniela.Data
             modelBuilder.Entity<PasswordResetToken>()
                 .HasIndex(p => p.Token)
                 .IsUnique();
+
+            modelBuilder.Entity<PremioDistribuido>()
+                .HasOne(p => p.Torneo)
+                .WithMany()
+                .HasForeignKey(p => p.TorneoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PremioDistribuido>()
+                .HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PremioDistribuido>()
+                .HasOne(p => p.Liga)
+                .WithMany()
+                .HasForeignKey(p => p.LigaId)
+                .OnDelete(DeleteBehavior.SetNull);
 
 
             modelBuilder.Entity<AuditLog>(entity =>

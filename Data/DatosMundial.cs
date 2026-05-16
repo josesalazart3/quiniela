@@ -15,7 +15,7 @@ namespace Quiniela.Data
             await DatosFasesYGruposAsync(context);
             await DatosGrupoEquiposAsync(context);
             await DatosPartidosFaseGruposAsync(context);
-            await DatosPartidosFaseEliminatoriaAsync(context);
+            //await DatosPartidosFaseEliminatoriaAsync(context);
         }
 
         private static async Task DatosTorneoYEstadiosAsync(AppDbContext context)
@@ -357,7 +357,7 @@ namespace Quiniela.Data
             await context.SaveChangesAsync();
         }
 
-        private static async Task DatosPartidosFaseEliminatoriaAsync(AppDbContext context)
+        /*private static async Task DatosPartidosFaseEliminatoriaAsync(AppDbContext context)
         {
             var partidos = new List<Partido>
             {
@@ -409,6 +409,6 @@ namespace Quiniela.Data
 
             context.Partidos.AddRange(partidos);
             await context.SaveChangesAsync();
-        }
+        }*/
     }
 }

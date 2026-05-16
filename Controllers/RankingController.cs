@@ -53,5 +53,25 @@ namespace Quiniela.Controllers
                 return StatusCode(500, new { error = "Ocurrió un error inesperado" });
             }
         }
+
+        /// <summary>
+        /// Cierra el torneo, calcula y registra todos los premios definitivos.
+        /// Solo puede ejecutarse una vez — el torneo queda marcado como Finalizado.
+        /// </summary>
+        [HttpPost("premios/globales/cerrar/{torneoId:int}")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> CerrarTorneo(int torneoId)
+        {
+            var premios = await _rankingService.CerrarTorneoYDistribuirPremiosAsync(torneoId);
+            return Ok(premios);
+        }
+
+        [HttpGet("premios/globales/historial/{torneoId:int}")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> GetHistorialPremios(int torneoId)
+        {
+            var premios = await _rankingService.GetPremiosDistribuidosAsync(torneoId);
+            return Ok(premios);
+        }
     }
 }

@@ -74,6 +74,11 @@ namespace Quiniela.Controllers
 
         [HttpPut("{id:int}/resultado")]
         [Authorize(Roles = "Administrador")]
+        /// <summary>
+        /// crea automáticamente actualización de ClasificacionGrupo, cálculo de puntos
+        /// en Predicciones, actualización de LigaMiembro.Puntos, bracket eliminatorio
+        /// y notificaciones SignalR a todos los clientes conectados.
+        /// </summary>
         public async Task<IActionResult> IngresarResultado(int id, [FromBody] PartidoResultadoDto dto)
         {
             var partido = await _partidoService.IngresarResultadoAsync(id, dto);

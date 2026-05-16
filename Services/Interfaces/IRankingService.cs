@@ -8,5 +8,7 @@ namespace Quiniela.Services.Interfaces
         Task<IEnumerable<RankingGlobalLigaReadDto>> GetRankingGlobalLigasAsync();
         Task<IEnumerable<RankingLigaReadDto>> GetPremiosLigaAsync(int ligaId);
         Task<PremiosGlobalesReadDto> GetPremiosGlobalesAsync();
+        Task<IEnumerable<PremioDistribuidoReadDto>> CerrarTorneoYDistribuirPremiosAsync(int torneoId);
+        Task<IEnumerable<PremioDistribuidoReadDto>> GetPremiosDistribuidosAsync(int torneoId);
     }
 }

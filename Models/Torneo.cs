@@ -16,6 +16,7 @@ namespace Quiniela.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
+        public bool Finalizado { get; set; } = false;
 
         public ICollection<Liga> Ligas { get; set; } = new List<Liga>();
 
