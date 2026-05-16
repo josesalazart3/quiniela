@@ -1,3 +1,4 @@
+using Quiniela.Models;
 using Quiniela.Models.DTOs;
 using Quiniela.Repositories.Interfaces;
 using Quiniela.Services.Interfaces;
@@ -10,11 +11,15 @@ namespace Quiniela.Services
     public class RankingService(
         AppDbContext context,
         ILigaMiembroRepository ligaMiembroRepository,
-        ILigaRepository ligaRepository) : IRankingService
+        ILigaRepository ligaRepository,
+        ITorneoRepository torneoRepository,
+        IPremioDistribuidoRepository premioRepository) : IRankingService
     {
         private readonly AppDbContext _context = context;
         private readonly ILigaMiembroRepository _ligaMiembroRepository = ligaMiembroRepository;
         private readonly ILigaRepository _ligaRepository = ligaRepository;
+        private readonly ITorneoRepository _torneoRepository = torneoRepository;
+        private readonly IPremioDistribuidoRepository _premioRepository = premioRepository;
 
         // Ranking global individual — toma el punteo más alto del usuario
         // entre todas las ligas de apuesta donde participa
@@ -30,7 +35,6 @@ namespace Quiniela.Services
                     lm.Estado == EstadoMiembro.Aprobado)
                 .ToListAsync();
 
-            // Agrupar por usuario y tomar el punteo más alto
             var rankingUsuarios = miembros
                 .GroupBy(lm => lm.UserId)
                 .Select(g => new
@@ -46,14 +50,13 @@ namespace Quiniela.Services
                     UserId = r.UserId,
                     FullName = r.FullName,
                     TotalPuntos = r.TotalPuntos,
-                    PremioAsignado = null // se calcula en GetPremiosGlobalesAsync
+                    PremioAsignado = null
                 });
 
             return rankingUsuarios;
         }
 
-        // Ranking global de ligas — ordenado por promedio de puntos
-        // solo ligas de apuesta
+        // Ranking global de ligas — ordenado por promedio de puntos solo ligas de apuesta
         public async Task<IEnumerable<RankingGlobalLigaReadDto>> GetRankingGlobalLigasAsync()
         {
             var ligas = await _context.Ligas
@@ -82,7 +85,7 @@ namespace Quiniela.Services
                         PromedioPuntos = Math.Round(promedio, 2),
                         TotalMiembros = miembrosAprobados.Count,
                         PremioTotal = premioTotal,
-                        PremioPerCapita = null // se calcula en GetPremiosGlobalesAsync
+                        PremioPerCapita = null
                     };
                 })
                 .OrderByDescending(r => r.PromedioPuntos)
@@ -113,14 +116,13 @@ namespace Quiniela.Services
             if (!miembros.Any()) return Enumerable.Empty<RankingLigaReadDto>();
 
             var premioTotal = liga.EsDeApuestas
-                ? miembros.Count * (liga.PrecioPorUnirse ?? 0) * 0.95m // 95% para repartir
+                ? miembros.Count * (liga.PrecioPorUnirse ?? 0) * 0.95m
                 : 0;
 
             var resultado = new List<RankingLigaReadDto>();
 
             if (!liga.EsDeApuestas)
             {
-                // Liga de diversión — solo ranking sin premios
                 return miembros.Select((m, index) => new RankingLigaReadDto
                 {
                     Posicion = index + 1,
@@ -132,13 +134,11 @@ namespace Quiniela.Services
                 });
             }
 
-            // Liga de apuesta — calcular premios con reglas de empate
             var puntajeMax = miembros.Max(m => m.Puntos);
             var primerLugar = miembros.Where(m => m.Puntos == puntajeMax).ToList();
 
             if (primerLugar.Count > 1)
             {
-                // Empate en primer lugar — 85% dividido equitativamente
                 var premioEmpate = premioTotal * 0.85m / primerLugar.Count;
                 return miembros.Select((m, index) => new RankingLigaReadDto
                 {
@@ -153,7 +153,6 @@ namespace Quiniela.Services
                 });
             }
 
-            // Sin empate en primer lugar
             AsignarPremiosPorPosicion(miembros, premioTotal, resultado);
             return resultado;
         }
@@ -167,22 +166,19 @@ namespace Quiniela.Services
                 .Where(l => l.EsDeApuestas)
                 .ToListAsync();
 
-            // Total recaudado global entre todas las ligas
             var totalGlobal = ligas.Sum(l =>
                 l.LigaMiembros.Count(lm => lm.Estado == EstadoMiembro.Aprobado)
                 * (l.PrecioPorUnirse ?? 0));
 
-            var montoGlobal = totalGlobal * 0.01m;         // 1% del total
-            var montoIndividual = montoGlobal * 0.5m;      // 0.5% para top 3 individuales
-            var montoLiga = montoGlobal * 0.5m;            // 0.5% para mejor liga
+            var montoGlobal = totalGlobal * 0.01m;
+            var montoIndividual = montoGlobal * 0.5m;
+            var montoLiga = montoGlobal * 0.5m;
 
-            // Top 3 individuales
             var rankingIndividual = (await GetRankingGlobalUsuariosAsync()).Take(3).ToList();
             var premiosIndividuales = new List<RankingGlobalUsuarioReadDto>();
 
             if (rankingIndividual.Any())
             {
-                // Verificar empates en top 3 y aplicar mismas reglas
                 var top = rankingIndividual.ToList();
                 var puntajeMax = top.Max(r => r.TotalPuntos);
                 var empatadosPrimero = top.Where(r => r.TotalPuntos == puntajeMax).ToList();
@@ -203,7 +199,6 @@ namespace Quiniela.Services
                 }
                 else
                 {
-                    // Sin empate — mismas reglas 50%, 25%, 10%
                     var porcentajes = new[] { 0.50m, 0.25m, 0.10m };
                     premiosIndividuales = top.Select((r, index) => new RankingGlobalUsuarioReadDto
                     {
@@ -218,7 +213,6 @@ namespace Quiniela.Services
                 }
             }
 
-            // Mejor liga por promedio de puntos
             var rankingLigas = (await GetRankingGlobalLigasAsync()).FirstOrDefault();
             RankingGlobalLigaReadDto? mejorLiga = null;
 
@@ -260,23 +254,157 @@ namespace Quiniela.Services
             };
         }
 
+        // Cierra el torneo y registra los premios distribuidos oficialmente
+        public async Task<IEnumerable<PremioDistribuidoReadDto>> CerrarTorneoYDistribuirPremiosAsync(int torneoId)
+        {
+            var torneo = await _torneoRepository.GetTorneoByIdAsync(torneoId);
+            if (torneo == null)
+                throw new InvalidOperationException("El torneo no existe");
+
+            if (torneo.Finalizado)
+                throw new InvalidOperationException("El torneo ya fue cerrado");
+
+            var premiosARegistrar = new List<PremioDistribuido>();
+            var fechaDistribucion = DateTime.UtcNow;
+
+            // 1. Premios por liga
+            var ligas = await _context.Ligas
+                .Include(l => l.LigaMiembros)
+                    .ThenInclude(lm => lm.User)
+                .Where(l => l.TorneoId == torneoId && l.EsDeApuestas)
+                .ToListAsync();
+
+            foreach (var liga in ligas)
+            {
+                var miembros = liga.LigaMiembros
+                    .Where(lm => lm.Estado == EstadoMiembro.Aprobado)
+                    .OrderByDescending(lm => lm.Puntos)
+                    .ToList();
+
+                if (!miembros.Any()) continue;
+
+                var premioTotal = miembros.Count * (liga.PrecioPorUnirse ?? 0) * 0.95m;
+                var grupos = miembros.GroupBy(m => m.Puntos).OrderByDescending(g => g.Key).ToList();
+                var porcentajes = new[] { 0.50m, 0.25m, 0.10m, 0.10m };
+                int posicion = 1;
+
+                foreach (var grupo in grupos)
+                {
+                    if (posicion > 4) break;
+                    var miembrosGrupo = grupo.ToList();
+                    decimal premio = miembrosGrupo.Count > 1
+                        ? Math.Round(premioTotal * porcentajes[posicion - 1] / miembrosGrupo.Count, 2)
+                        : Math.Round(premioTotal * porcentajes[posicion - 1], 2);
+
+                    foreach (var miembro in miembrosGrupo)
+                    {
+                        premiosARegistrar.Add(new PremioDistribuido
+                        {
+                            TorneoId = torneoId,
+                            UserId = miembro.UserId,
+                            LigaId = liga.Id,
+                            Concepto = $"{posicion}° lugar — {liga.Nombre}",
+                            Monto = premio,
+                            Posicion = posicion,
+                            FechaDistribucion = fechaDistribucion
+                        });
+                    }
+                    posicion += miembrosGrupo.Count;
+                }
+            }
+
+            // 2. Premio global individual (0.5% del total recaudado)
+            var totalGlobal = ligas.Sum(l =>
+                l.LigaMiembros.Count(lm => lm.Estado == EstadoMiembro.Aprobado) *
+                (l.PrecioPorUnirse ?? 0));
+
+            var montoIndividual = totalGlobal * 0.005m;
+            var rankingGlobal = (await GetRankingGlobalUsuariosAsync()).Take(3).ToList();
+            var porcentajesGlobal = new[] { 0.50m, 0.25m, 0.10m };
+
+            for (int i = 0; i < rankingGlobal.Count; i++)
+            {
+                premiosARegistrar.Add(new PremioDistribuido
+                {
+                    TorneoId = torneoId,
+                    UserId = rankingGlobal[i].UserId,
+                    LigaId = null,
+                    Concepto = $"{i + 1}° lugar global individual",
+                    Monto = Math.Round(montoIndividual * porcentajesGlobal[i], 2),
+                    Posicion = i + 1,
+                    FechaDistribucion = fechaDistribucion
+                });
+            }
+
+            // 3. Premio global de liga (0.5% para la mejor liga)
+            var montoLiga = totalGlobal * 0.005m;
+            var mejorLiga = (await GetRankingGlobalLigasAsync()).FirstOrDefault();
+
+            if (mejorLiga != null)
+            {
+                var ligaGanadora = await _context.Ligas
+                    .Include(l => l.LigaMiembros)
+                    .FirstOrDefaultAsync(l => l.Id == mejorLiga.LigaId);
+
+                if (ligaGanadora != null)
+                {
+                    var miembrosLiga = ligaGanadora.LigaMiembros
+                        .Where(lm => lm.Estado == EstadoMiembro.Aprobado)
+                        .ToList();
+
+                    var premioPerCapita = miembrosLiga.Any()
+                        ? Math.Round(montoLiga / miembrosLiga.Count, 2)
+                        : 0;
+
+                    foreach (var miembro in miembrosLiga)
+                    {
+                        premiosARegistrar.Add(new PremioDistribuido
+                        {
+                            TorneoId = torneoId,
+                            UserId = miembro.UserId,
+                            LigaId = ligaGanadora.Id,
+                            Concepto = $"Liga con mayor promedio — {ligaGanadora.Nombre}",
+                            Monto = premioPerCapita,
+                            Posicion = 1,
+                            FechaDistribucion = fechaDistribucion
+                        });
+                    }
+                }
+            }
+
+            // 4. Guardar premios y marcar torneo como finalizado
+            await _premioRepository.AddRangeAsync(premiosARegistrar);
+
+            torneo.Finalizado = true;
+            torneo.UpdatedAt = DateTime.UtcNow;
+            await _torneoRepository.UpdateTorneoAsync(torneo);
+
+            return premiosARegistrar.Select(MapPremioToReadDto);
+        }
+
+        // Retorna el historial de premios distribuidos en un torneo
+        public async Task<IEnumerable<PremioDistribuidoReadDto>> GetPremiosDistribuidosAsync(int torneoId)
+        {
+            var premios = await _premioRepository.GetByTorneoAsync(torneoId);
+            return premios.Select(MapPremioToReadDto);
+        }
+
         // =====================
         // HELPERS
         // =====================
 
         private static void AsignarPremiosPorPosicion(
-            List<Models.LigaMiembro> miembros,
+            List<LigaMiembro> miembros,
             decimal premioTotal,
             List<RankingLigaReadDto> resultado)
         {
-            // Verificar empates en cada posición
             var grupos = miembros
                 .GroupBy(m => m.Puntos)
                 .OrderByDescending(g => g.Key)
                 .ToList();
 
             int posicion = 1;
-            var porcentajes = new[] { 0.50m, 0.25m, 0.10m, 0.10m }; // 1ro, 2do, 3ro, 4to
+            var porcentajes = new[] { 0.50m, 0.25m, 0.10m, 0.10m };
 
             foreach (var grupo in grupos)
             {
@@ -286,15 +414,9 @@ namespace Quiniela.Services
                 if (posicion <= 4)
                 {
                     if (miembrosGrupo.Count > 1)
-                    {
-                        // Empate — repartir el porcentaje correspondiente equitativamente
                         premio = Math.Round(premioTotal * porcentajes[posicion - 1] / miembrosGrupo.Count, 2);
-                    }
                     else
-                    {
                         premio = Math.Round(premioTotal * porcentajes[posicion - 1], 2);
-
-                    }
                 }
 
                 foreach (var miembro in miembrosGrupo)
@@ -313,5 +435,19 @@ namespace Quiniela.Services
                 posicion += miembrosGrupo.Count;
             }
         }
+
+        private static PremioDistribuidoReadDto MapPremioToReadDto(PremioDistribuido p) => new()
+        {
+            Id = p.Id,
+            TorneoId = p.TorneoId,
+            UserId = p.UserId,
+            FullName = p.User == null ? string.Empty : $"{p.User.FirstName} {p.User.LastName}".Trim(),
+            LigaId = p.LigaId,
+            NombreLiga = p.Liga?.Nombre,
+            Concepto = p.Concepto,
+            Monto = p.Monto,
+            Posicion = p.Posicion,
+            FechaDistribucion = p.FechaDistribucion
+        };
     }
 }

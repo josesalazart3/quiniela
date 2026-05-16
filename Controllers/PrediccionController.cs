@@ -46,6 +46,10 @@ namespace Quiniela.Controllers
         }
 
         [HttpPost]
+        /// <summary>
+        /// Solo válido si faltan más de 15 minutos para el inicio del partido.
+        /// El usuario debe ser miembro aprobado de la liga.
+        /// </summary>
         public async Task<IActionResult> Create([FromBody] PrediccionCreateDto dto)
         {
             try
@@ -66,6 +70,10 @@ namespace Quiniela.Controllers
         }
 
         [HttpPut("{id:int}")]
+        /// <summary>
+        /// Solo válido si faltan más de 15 minutos para el inicio del partido.
+        /// Solo el dueño de la predicción puede modificarla.
+        /// </summary>
         public async Task<IActionResult> Update(int id, [FromBody] PrediccionUpdateDto dto)
         {
             try

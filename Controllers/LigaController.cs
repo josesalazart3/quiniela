@@ -78,6 +78,10 @@ namespace Quiniela.Controllers
         }
 
         [HttpPost]
+        /// <summary>
+        /// Al crear la liga el usuario queda automáticamente como admin y miembro aprobado.
+        /// Si es de apuestas el precio es obligatorio y mayor a 0.
+        /// </summary>
         public async Task<IActionResult> Create([FromBody] LigaCreateDto dto)
         {
             try
@@ -98,6 +102,9 @@ namespace Quiniela.Controllers
         }
 
         [HttpPost("{ligaId:int}/unirse")]
+        /// <summary>
+        /// El usuario queda en estado Pendiente hasta que el admin lo apruebe.
+        /// </summary>
         public async Task<IActionResult> Unirse(int ligaId, [FromBody] LigaMiembroCreateDto dto)
         {
             try

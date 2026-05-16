@@ -78,6 +78,9 @@ namespace Quiniela.Controllers
         }
 
         [HttpPost("contraseña-olvidada")]
+        /// <summary>
+        /// Siempre retorna 200 aunque el email no exista por seguridad no se revela si el email está registrado.
+        /// </summary>
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
         {
             await _authService.ForgotPasswordAsync(dto.Email);

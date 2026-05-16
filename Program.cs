@@ -63,7 +63,6 @@ builder.Services.AddScoped<IGrupoService, GrupoService>();
 builder.Services.AddScoped<IClasificacionGrupoRepository, ClasificacionGrupoRepository>();
 builder.Services.AddScoped<IPartidoRepository, PartidoRepository>();
 builder.Services.AddScoped<IPartidoService, PartidoService>();
-builder.Services.AddScoped<BracketService>();
 builder.Services.AddScoped<IPrediccionRepository, PrediccionRepository>();
 builder.Services.AddScoped<IPrediccionService, PrediccionService>();
 builder.Services.AddScoped<ILigaRepository, LigaRepository>();
