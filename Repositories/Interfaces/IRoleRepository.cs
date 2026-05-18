@@ -8,5 +8,7 @@ namespace Quiniela.Repositories.Interfaces
         Task<Role?> GetRoleByNameAsync(string name);
         Task<Role?> GetByIdAsync(int id);
         //Task<Role?> UpdateRoleAsync(Role role);
+        Task<Role?> GetRoleByIdAsync(int id);
+
     }
 }

@@ -8,7 +8,7 @@ namespace Quiniela.Repositories
     public class RoleRepository(AppDbContext context) : IRoleRepository
     {
         private readonly AppDbContext _context = context;
-        
+
         public async Task<Role> AddRoleAsync(Role role)
         {
             _context.Roles.Add(role);
@@ -22,6 +22,10 @@ namespace Quiniela.Repositories
         }
 
         public async Task<Role?> GetByIdAsync(int id)
+        {
+            return await _context.Roles.FindAsync(id);
+        }
+        public async Task<Role?> GetRoleByIdAsync(int id)
         {
             return await _context.Roles.FindAsync(id);
         }
