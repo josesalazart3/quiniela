@@ -73,6 +73,9 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IInvitacionLigaRepository, InvitacionLigaRepository>();
 builder.Services.AddScoped<IInvitacionLigaService, InvitacionLigaService>();
 builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+builder.Services.AddScoped<IPremioDistribuidoRepository, PremioDistribuidoRepository>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificacionService, NotificacionService>();
