@@ -11,5 +11,7 @@ namespace Quiniela.Services.Interfaces
         Task<UserProfileDto?> UpdateRoleAsync(int id, UsuarioRolUpdateDto dto);
         Task<bool> UpdatePasswordAsync(int id, UsuarioPasswordUpdateDto dto);
         Task<bool> DeleteAsync(int id);
+        Task<IEnumerable<RoleSelectDto>> GetRolesAsync();
+
     }
 }
