@@ -93,8 +93,20 @@ namespace Quiniela.Services
         {
             Id = user.Id,
             Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
             FullName = $"{user.FirstName} {user.LastName}".Trim(),
             Role = user.Role?.Name ?? string.Empty
         };
+
+        public async Task<IEnumerable<RoleSelectDto>> GetRolesAsync()
+        {
+            var roles = await _roleRepository.GetAllRolesAsync();
+            return roles.Select(r => new RoleSelectDto
+            {
+                Id = r.Id,
+                Name = r.Name
+            });
+        }
     }
 }

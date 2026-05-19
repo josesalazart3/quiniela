@@ -29,5 +29,13 @@ namespace Quiniela.Repositories
         {
             return await _context.Roles.FindAsync(id);
         }
+
+        public async Task<IEnumerable<Role>> GetAllRolesAsync()
+        {
+            return await _context.Roles
+                .AsNoTracking()
+                .OrderBy(r => r.Id)
+                .ToListAsync();
+        }
     }
 }

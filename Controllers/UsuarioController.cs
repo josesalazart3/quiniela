@@ -65,5 +65,12 @@ namespace Quiniela.Controllers
             if (!deleted) return NotFound();
             return NoContent();
         }
+
+        [HttpGet("roles")]
+        public async Task<IActionResult> GetRoles()
+        {
+            var roles = await _usuarioService.GetRolesAsync();
+            return Ok(roles);
+        }
     }
 }

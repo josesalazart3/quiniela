@@ -112,6 +112,8 @@ namespace Quiniela.Services
             {
                 Id = user.Id,
                 Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 FullName = $"{user.FirstName} {user.LastName}".Trim(),
                 Role = user.Role?.Name ?? string.Empty
             };
