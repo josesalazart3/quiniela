@@ -127,9 +127,27 @@ namespace Quiniela.Services
             if (liga == null)
                 throw new InvalidOperationException("La liga especificada no existe");
 
-            var yaMiembro = await _ligaMiembroRepository.EsMiembroAsync(userId, ligaId);
-            if (yaMiembro)
-                throw new InvalidOperationException("Ya eres miembro de esta liga");
+            var miembroExistente = await _ligaMiembroRepository.GetMiembroAsync(userId, ligaId);
+
+            if (miembroExistente != null)
+            {
+                if (miembroExistente.Estado == EstadoMiembro.Aprobado ||
+                    miembroExistente.Estado == EstadoMiembro.Pendiente)
+                {
+                    throw new InvalidOperationException("Ya tienes una solicitud activa o ya eres miembro de esta liga");
+                }
+
+                // Si estaba rechazado, reactivar la solicitud
+                miembroExistente.NombreEquipo = dto.NombreEquipo;
+                miembroExistente.EsAdmin = false;
+                miembroExistente.Puntos = 0;
+                miembroExistente.Estado = EstadoMiembro.Pendiente;
+                miembroExistente.FechaUnion = DateTime.UtcNow;
+                miembroExistente.DeletedAt = null;
+
+                var actualizado = await _ligaMiembroRepository.UpdateMiembroAsync(miembroExistente);
+                return MapMiembroToReadDto(actualizado!);
+            }
 
             var miembro = new LigaMiembro
             {
@@ -138,27 +156,30 @@ namespace Quiniela.Services
                 NombreEquipo = dto.NombreEquipo,
                 EsAdmin = false,
                 Puntos = 0,
-                Estado = EstadoMiembro.Pendiente, // Pendiente hasta que el admin apruebe
+                Estado = EstadoMiembro.Pendiente,
                 FechaUnion = DateTime.UtcNow
             };
 
-            var saved = await _ligaMiembroRepository.AddMiembroAsync(miembro);
+            await _ligaMiembroRepository.AddMiembroAsync(miembro);
             var savedWithDetails = await _ligaMiembroRepository.GetMiembroAsync(userId, ligaId);
             return MapMiembroToReadDto(savedWithDetails!);
         }
 
         public async Task<LigaMiembroReadDto> AprobarMiembroAsync(int ligaId, LigaMiembroAprobacionDto dto, int adminId)
         {
-            // Verificar que quien aprueba es admin de la liga
             var esAdmin = await _ligaMiembroRepository.EsAdminAsync(adminId, ligaId);
             if (!esAdmin)
                 throw new UnauthorizedAccessException("Solo el administrador de la liga puede aprobar miembros");
 
             var miembro = await _ligaMiembroRepository.GetMiembroAsync(dto.UserId, ligaId);
             if (miembro == null)
-                throw new InvalidOperationException("El usuario no tiene solicitud pendiente en esta liga");
+                throw new InvalidOperationException("No se encontró la solicitud del usuario en esta liga");
+
+            if (miembro.Estado != EstadoMiembro.Pendiente)
+                throw new InvalidOperationException("Solo se pueden aprobar o rechazar solicitudes pendientes");
 
             miembro.Estado = dto.Aprobar ? EstadoMiembro.Aprobado : EstadoMiembro.Rechazado;
+            miembro.DeletedAt = null;
 
             var updated = await _ligaMiembroRepository.UpdateMiembroAsync(miembro);
 
@@ -196,6 +217,9 @@ namespace Quiniela.Services
 
             if (miembro.EsAdmin)
                 throw new InvalidOperationException("El administrador no puede salir de la liga");
+
+            if (miembro.Estado != EstadoMiembro.Aprobado)
+                throw new InvalidOperationException("Solo los miembros aprobados pueden salir de la liga");
 
             return await _ligaMiembroRepository.DeleteMiembroAsync(userId, ligaId);
         }
