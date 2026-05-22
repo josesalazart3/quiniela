@@ -9,5 +9,7 @@ namespace Quiniela.Services.Interfaces
         Task<IEnumerable<PrediccionReadDto>> GetMisPrediccionesAsync(int userId, int ligaId, PaginacionDto paginacion);
         Task<PrediccionReadDto?> GetPrediccionByIdAsync(int id);
         Task<PrediccionReadDto?> UpdatePrediccionAsync(int id, PrediccionUpdateDto dto, int userId);
+        Task<PrediccionReadDto?> GetPrediccionByUserLigaPartidoAsync(int userId, int ligaId, int partidoId);
+
     }
 }

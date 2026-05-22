@@ -103,6 +103,13 @@ namespace Quiniela.Services
             return MapToReadDto(updatedWithDetails!);
         }
 
+        public async Task<PrediccionReadDto?> GetPrediccionByUserLigaPartidoAsync(int userId, int ligaId, int partidoId)
+        {
+            var prediccion = await _prediccionRepository.GetPrediccionByUserLigaPartidoAsync(userId, ligaId, partidoId);
+            if (prediccion == null) return null;
+            return MapToReadDto(prediccion);
+        }
+
         private static PrediccionReadDto MapToReadDto(Prediccion prediccion) => new()
         {
             Id = prediccion.Id,

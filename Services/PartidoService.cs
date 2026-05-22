@@ -36,12 +36,6 @@ namespace Quiniela.Services
             if (estadio == null)
                 throw new InvalidOperationException("El estadio especificado no existe");
 
-            if (dto.EquipoLocalId.HasValue && dto.EquipoVisitanteId.HasValue &&
-                dto.EquipoLocalId.Value == dto.EquipoVisitanteId.Value)
-            {
-                throw new InvalidOperationException("El equipo local y visitante no pueden ser el mismo");
-            }
-
             var partido = new Partido
             {
                 TorneoId = dto.TorneoId,
@@ -103,24 +97,13 @@ namespace Quiniela.Services
             var partido = await _partidoRepository.GetPartidoByIdAsync(id);
             if (partido == null) return null;
 
-            var nuevoEquipoLocalId = dto.EquipoLocalId ?? partido.EquipoLocalId;
-            var nuevoEquipoVisitanteId = dto.EquipoVisitanteId ?? partido.EquipoVisitanteId;
-
-            if (nuevoEquipoLocalId.HasValue && nuevoEquipoVisitanteId.HasValue &&
-                nuevoEquipoLocalId.Value == nuevoEquipoVisitanteId.Value)
-            {
-                throw new InvalidOperationException("El equipo local y visitante no pueden ser el mismo");
-            }
-
             partido.EquipoLocalId = dto.EquipoLocalId ?? partido.EquipoLocalId;
             partido.EquipoVisitanteId = dto.EquipoVisitanteId ?? partido.EquipoVisitanteId;
             partido.DescripcionLocal = dto.DescripcionLocal ?? partido.DescripcionLocal;
             partido.DescripcionVisitante = dto.DescripcionVisitante ?? partido.DescripcionVisitante;
 
             if (dto.FechaHora.HasValue)
-            {
                 partido.FechaHora = ConvertirAGuatemalaUtc(dto.FechaHora.Value);
-            }
 
             partido.EstadioId = dto.EstadioId ?? partido.EstadioId;
 
@@ -162,6 +145,23 @@ namespace Quiniela.Services
         public async Task<bool> DeletePartidoAsync(int id)
         {
             return await _partidoRepository.DeletePartidoAsync(id);
+        }
+
+        public async Task<PartidoReadDto?> ActualizarMarcadorAsync(int id, PartidoMarcadorDto dto)
+        {
+            var partido = await _partidoRepository.GetPartidoByIdWithDetailsAsync(id);
+            if (partido == null) return null;
+
+            if (partido.Finalizado)
+                throw new InvalidOperationException("El partido ya fue finalizado");
+
+            var updated = await _partidoRepository.ActualizarMarcadorAsync(id, dto.GolesLocal, dto.GolesVisitante);
+            if (!updated) return null;
+
+            await _notificacionService.NotificarResultadoPartidoAsync(partido.TorneoId, id);
+
+            var updatedWithDetails = await _partidoRepository.GetPartidoByIdWithDetailsAsync(id);
+            return MapToReadDto(updatedWithDetails!);
         }
 
         private async Task ActualizarClasificacionAsync(Partido partido, int golesLocal, int golesVisitante)
@@ -224,9 +224,7 @@ namespace Quiniela.Services
                 : "America/Guatemala";
 
             var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-
             var local = DateTime.SpecifyKind(fecha, DateTimeKind.Unspecified);
-
             return TimeZoneInfo.ConvertTimeToUtc(local, tz);
         }
 

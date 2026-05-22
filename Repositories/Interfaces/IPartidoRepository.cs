@@ -16,5 +16,8 @@ namespace Quiniela.Repositories.Interfaces
         Task<Partido?> IngresarResultadoAsync(int id, int golesLocal, int golesVisitante);
         Task<bool> DeletePartidoAsync(int id);
         Task<IEnumerable<Partido>> GetPartidosFinalizadosByGrupoAsync(int grupoId);
+
+        Task<bool> ActualizarMarcadorAsync(int id, int golesLocal, int golesVisitante);
+
     }
 }
