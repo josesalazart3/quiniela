@@ -12,6 +12,9 @@ namespace Quiniela.Models
 
         public Torneo? Torneo { get; set; }
 
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+
         public ICollection<Partido> Partidos { get; set; } = new List<Partido>();
     }
 }

@@ -38,8 +38,20 @@ namespace Quiniela.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Create([FromBody] EquipoCreateDto dto)
         {
-            var created = await _equipoService.CreateEquipoAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            try
+            {
+                var created = await _equipoService.CreateEquipoAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                var realError = ex.InnerException?.Message ?? ex.Message;
+                return StatusCode(500, new { error = realError });
+            }
         }
 
         [HttpPut("{id:int}")]

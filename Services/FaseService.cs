@@ -16,11 +16,18 @@ namespace Quiniela.Services
             if (torneo == null)
                 throw new InvalidOperationException("El torneo especificado no existe");
 
+            if (string.IsNullOrWhiteSpace(dto.Nombre))
+                throw new InvalidOperationException("El nombre de la fase es obligatorio");
+
+            if (dto.Orden <= 0)
+                throw new InvalidOperationException("El orden de la fase debe ser mayor que cero");
+
             var fase = new Fase
             {
-                Nombre = dto.Nombre,
+                Nombre = dto.Nombre.Trim(),
                 Orden = dto.Orden,
-                TorneoId = dto.TorneoId
+                TorneoId = dto.TorneoId,
+                CreatedAt = DateTime.UtcNow
             };
 
             var saved = await _faseRepository.AddFaseAsync(fase);
@@ -58,8 +65,23 @@ namespace Quiniela.Services
             var fase = await _faseRepository.GetFaseByIdAsync(id);
             if (fase == null) return null;
 
-            fase.Nombre = dto.Nombre ?? fase.Nombre;
-            fase.Orden = dto.Orden ?? fase.Orden;
+            if (dto.Nombre is not null)
+            {
+                if (string.IsNullOrWhiteSpace(dto.Nombre))
+                    throw new InvalidOperationException("El nombre de la fase no puede estar vacío");
+
+                fase.Nombre = dto.Nombre.Trim();
+            }
+
+            if (dto.Orden.HasValue)
+            {
+                if (dto.Orden.Value <= 0)
+                    throw new InvalidOperationException("El orden de la fase debe ser mayor que cero");
+
+                fase.Orden = dto.Orden.Value;
+            }
+
+            fase.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _faseRepository.UpdateFaseAsync(fase);
             if (updated == null) return null;

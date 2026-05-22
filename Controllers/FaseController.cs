@@ -45,8 +45,19 @@ namespace Quiniela.Controllers
         [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Create([FromBody] FaseCreateDto dto)
         {
-            var created = await _faseService.CreateFaseAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            try
+            {
+                var created = await _faseService.CreateFaseAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         [HttpPut("{id:int}")]

@@ -22,10 +22,14 @@ namespace Quiniela.Services
             if (torneo == null)
                 throw new InvalidOperationException("El torneo especificado no existe");
 
+            if (string.IsNullOrWhiteSpace(dto.Nombre))
+                throw new InvalidOperationException("El nombre del grupo es obligatorio");
+
             var grupo = new Grupo
             {
-                Nombre = dto.Nombre,
-                TorneoId = dto.TorneoId
+                Nombre = dto.Nombre.Trim(),
+                TorneoId = dto.TorneoId,
+                CreatedAt = DateTime.UtcNow
             };
 
             var saved = await _grupoRepository.AddGrupoAsync(grupo);
@@ -63,7 +67,15 @@ namespace Quiniela.Services
             var grupo = await _grupoRepository.GetGrupoByIdAsync(id);
             if (grupo == null) return null;
 
-            grupo.Nombre = dto.Nombre ?? grupo.Nombre;
+            if (dto.Nombre is not null)
+            {
+                if (string.IsNullOrWhiteSpace(dto.Nombre))
+                    throw new InvalidOperationException("El nombre del grupo no puede estar vacío");
+
+                grupo.Nombre = dto.Nombre.Trim();
+            }
+
+            grupo.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _grupoRepository.UpdateGrupoAsync(grupo);
             if (updated == null) return null;
@@ -76,7 +88,6 @@ namespace Quiniela.Services
         {
             return await _grupoRepository.DeleteGrupoAsync(id);
         }
-
 
         public async Task<GrupoReadDto> AsignarEquipoAGrupoAsync(int grupoId, int equipoId)
         {
@@ -98,7 +109,6 @@ namespace Quiniela.Services
                 EquipoId = equipoId
             });
 
-            // Crear ClasificacionGrupo automáticamente con valores en 0
             await _clasificacionRepository.AddClasificacionAsync(new ClasificacionGrupo
             {
                 GrupoId = grupoId,
@@ -155,7 +165,6 @@ namespace Quiniela.Services
             var removido = await _grupoRepository.RemoveEquipoDeGrupoAsync(grupoId, equipoId);
             if (!removido) return false;
 
-            // Eliminar su ClasificacionGrupo también
             await _clasificacionRepository.DeleteClasificacionAsync(grupoId, equipoId);
             return true;
         }

@@ -11,11 +11,17 @@ namespace Quiniela.Services
 
         public async Task<EstadioReadDto> CreateEstadioAsync(EstadioCreateDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.Nombre))
+                throw new InvalidOperationException("El nombre del estadio es obligatorio");
+
+            if (dto.Capacidad <= 0)
+                throw new InvalidOperationException("La capacidad debe ser mayor que cero");
+
             var estadio = new Estadio
             {
-                Nombre = dto.Nombre,
-                Ciudad = dto.Ciudad,
-                Pais = dto.Pais,
+                Nombre = dto.Nombre.Trim(),
+                Ciudad = dto.Ciudad.Trim(),
+                Pais = dto.Pais.Trim(),
                 Capacidad = dto.Capacidad
             };
 
