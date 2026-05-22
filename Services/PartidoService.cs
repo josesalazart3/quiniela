@@ -149,9 +149,7 @@ namespace Quiniela.Services
             return await _partidoRepository.DeletePartidoAsync(id);
         }
 
-        // =====================
-        // LÓGICA AUTOMÁTICA
-        // =====================
+
 
         private async Task ActualizarClasificacionAsync(Partido partido, int golesLocal, int golesVisitante)
         {
@@ -204,6 +202,24 @@ namespace Quiniela.Services
         private async Task CalcularPuntosPrediccionesAsync(int partidoId, int golesLocal, int golesVisitante)
         {
             await _prediccionRepository.ActualizarPuntosPrediccionesAsync(partidoId, golesLocal, golesVisitante);
+        }
+
+        public async Task<PartidoReadDto?> ActualizarMarcadorAsync(int id, PartidoMarcadorDto dto)
+        {
+            var partido = await _partidoRepository.GetPartidoByIdWithDetailsAsync(id);
+            if (partido == null) return null;
+
+            if (partido.Finalizado)
+                throw new InvalidOperationException("El partido ya fue finalizado");
+
+            var updated = await _partidoRepository.ActualizarMarcadorAsync(id, dto.GolesLocal, dto.GolesVisitante);
+            if (!updated) return null;
+
+            // Solo notifica SignalR — sin calcular puntos ni clasificación
+            await _notificacionService.NotificarResultadoPartidoAsync(partido.TorneoId, id);
+
+            var updatedWithDetails = await _partidoRepository.GetPartidoByIdWithDetailsAsync(id);
+            return MapToReadDto(updatedWithDetails!);
         }
 
         private static PartidoReadDto MapToReadDto(Partido partido) => new()

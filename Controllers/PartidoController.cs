@@ -94,5 +94,19 @@ namespace Quiniela.Controllers
             if (!deleted) return NotFound();
             return NoContent();
         }
+
+        /// <summary>
+        /// Actualiza el marcador en vivo sin finalizar el partido.
+        /// No calcula puntos ni actualiza clasificación.
+        /// Notifica en tiempo real via SignalR.
+        /// </summary>
+        [HttpPut("{id:int}/marcador")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> ActualizarMarcador(int id, [FromBody] PartidoMarcadorDto dto)
+        {
+            var partido = await _partidoService.ActualizarMarcadorAsync(id, dto);
+            if (partido == null) return NotFound();
+            return Ok(partido);
+        }
     }
 }

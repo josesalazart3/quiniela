@@ -133,14 +133,14 @@ namespace Quiniela.Repositories
         }
 
         public async Task<bool> DeletePartidoAsync(int id)
-	{
-	    var partido = await _context.Partidos.FindAsync(id);
-	    if (partido == null) return false;
+        {
+            var partido = await _context.Partidos.FindAsync(id);
+            if (partido == null) return false;
 
-	    partido.DeletedAt = DateTime.UtcNow;
-	    await _context.SaveChangesAsync();
-	    return true;
-	}
+            partido.DeletedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
+        }
 
         public async Task<IEnumerable<Partido>> GetPartidosFinalizadosByGrupoAsync(int grupoId)
         {
@@ -148,6 +148,17 @@ namespace Quiniela.Repositories
                 .AsNoTracking()
                 .Where(p => p.GrupoId == grupoId && p.Finalizado)
                 .ToListAsync();
+        }
+
+        public async Task<bool> ActualizarMarcadorAsync(int id, int golesLocal, int golesVisitante)
+        {
+            var partido = await _context.Partidos.FindAsync(id);
+            if (partido == null) return false;
+
+            partido.GolesLocal = golesLocal;
+            partido.GolesVisitante = golesVisitante;
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

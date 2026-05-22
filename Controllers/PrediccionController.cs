@@ -9,11 +9,10 @@ namespace Quiniela.Controllers
     [ApiController]
     [Route("api/v1/[controller]")]
     [Authorize]
-    public class PrediccionController(IPrediccionService prediccionService, CryptoHelper cryptoHelper, ILogger<PrediccionController> logger) : ControllerBase
+    public class PrediccionController(IPrediccionService prediccionService, CryptoHelper cryptoHelper) : ControllerBase
     {
         private readonly IPrediccionService _prediccionService = prediccionService;
         private readonly CryptoHelper _cryptoHelper = cryptoHelper;
-        private readonly ILogger<PrediccionController> _logger = logger;
 
         private int GetUserId()
         {
@@ -37,6 +36,17 @@ namespace Quiniela.Controllers
             return Ok(predicciones);
         }
 
+        /// <summary>
+        /// Verifica si el usuario ya tiene una predicción para un partido en una liga específica.
+        /// </summary>
+        [HttpGet("verificar")]
+        public async Task<IActionResult> Verificar([FromQuery] int partidoId, [FromQuery] int ligaId)
+        {
+            var userId = GetUserId();
+            var prediccion = await _prediccionService.GetPrediccionByUserLigaPartidoAsync(userId, ligaId, partidoId);
+            return Ok(new { existe = prediccion != null, prediccion });
+        }
+
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -45,57 +55,29 @@ namespace Quiniela.Controllers
             return Ok(prediccion);
         }
 
-        [HttpPost]
         /// <summary>
         /// Solo válido si faltan más de 15 minutos para el inicio del partido.
         /// El usuario debe ser miembro aprobado de la liga.
         /// </summary>
+        [HttpPost]
         public async Task<IActionResult> Create([FromBody] PrediccionCreateDto dto)
         {
-            try
-            {
-                var userId = GetUserId();
-                var created = await _prediccionService.CreatePrediccionAsync(dto, userId);
-                return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al crear predicción");
-                return StatusCode(500, new { error = "Ocurrió un error inesperado" });
-            }
+            var userId = GetUserId();
+            var created = await _prediccionService.CreatePrediccionAsync(dto, userId);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
-        [HttpPut("{id:int}")]
         /// <summary>
         /// Solo válido si faltan más de 15 minutos para el inicio del partido.
         /// Solo el dueño de la predicción puede modificarla.
         /// </summary>
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] PrediccionUpdateDto dto)
         {
-            try
-            {
-                var userId = GetUserId();
-                var updated = await _prediccionService.UpdatePrediccionAsync(id, dto, userId);
-                if (updated == null) return NotFound();
-                return Ok(updated);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al actualizar predicción");
-                return StatusCode(500, new { error = "Ocurrió un error inesperado" });
-            }
+            var userId = GetUserId();
+            var updated = await _prediccionService.UpdatePrediccionAsync(id, dto, userId);
+            if (updated == null) return NotFound();
+            return Ok(updated);
         }
     }
 }

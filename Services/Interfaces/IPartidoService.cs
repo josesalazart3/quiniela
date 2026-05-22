@@ -14,5 +14,7 @@ namespace Quiniela.Services.Interfaces
         Task<PartidoReadDto?> UpdatePartidoAsync(int id, PartidoUpdateDto dto);
         Task<PartidoReadDto?> IngresarResultadoAsync(int id, PartidoResultadoDto dto);
         Task<bool> DeletePartidoAsync(int id);
+        Task<PartidoReadDto?> ActualizarMarcadorAsync(int id, PartidoMarcadorDto dto);
+
     }
 }
