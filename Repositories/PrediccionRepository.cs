@@ -92,35 +92,37 @@ namespace Quiniela.Repositories
 
             foreach (var prediccion in predicciones)
             {
-                // Resultado exacto = 3 puntos
+                var puntosAnteriores = prediccion.PuntosGanados;
+                int nuevosPuntos;
+
                 if (prediccion.GolesLocal == golesLocal && prediccion.GolesVisitante == golesVisitante)
                 {
-                    prediccion.PuntosGanados = 3;
+                    nuevosPuntos = 3;
                 }
-                // Acertar ganador o empate = 1 punto
                 else if (
                     (prediccion.GolesLocal > prediccion.GolesVisitante && golesLocal > golesVisitante) ||
                     (prediccion.GolesLocal < prediccion.GolesVisitante && golesLocal < golesVisitante) ||
                     (prediccion.GolesLocal == prediccion.GolesVisitante && golesLocal == golesVisitante))
                 {
-                    prediccion.PuntosGanados = 1;
+                    nuevosPuntos = 1;
                 }
                 else
                 {
-                    prediccion.PuntosGanados = 0;
+                    nuevosPuntos = 0;
                 }
 
-                // Actualizar puntos del LigaMiembro
+                prediccion.PuntosGanados = nuevosPuntos;
+
                 var miembro = await _context.LigaMiembros
                     .FirstOrDefaultAsync(lm => lm.UserId == prediccion.UserId && lm.LigaId == prediccion.LigaId);
 
                 if (miembro != null)
-                    miembro.Puntos += prediccion.PuntosGanados;
+                    miembro.Puntos += (nuevosPuntos - puntosAnteriores);
             }
 
             await _context.SaveChangesAsync();
         }
-        
+
         public async Task<bool> DeletePrediccionAsync(int id)
 	{
 	    var prediccion = await _context.Predicciones.FindAsync(id);

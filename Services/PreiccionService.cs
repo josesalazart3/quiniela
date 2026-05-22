@@ -120,6 +120,8 @@ namespace Quiniela.Services
             GolesLocal = prediccion.GolesLocal,
             GolesVisitante = prediccion.GolesVisitante,
             PuntosGanados = prediccion.PuntosGanados,
+            Finalizado = prediccion.Partido?.Finalizado ?? false,
+            FechaHora = prediccion.Partido?.FechaHora ?? DateTime.MinValue,
             CreatedAt = prediccion.CreatedAt,
             UpdatedAt = prediccion.UpdatedAt
         };

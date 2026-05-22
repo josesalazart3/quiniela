@@ -10,6 +10,8 @@ namespace Quiniela.Models.DTOs
         public int GolesLocal { get; set; }
         public int GolesVisitante { get; set; }
         public int PuntosGanados { get; set; }
+        public bool Finalizado { get; set; }
+        public DateTime FechaHora { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

@@ -86,7 +86,6 @@ namespace Quiniela.Services
             if (invitacion == null)
                 throw new InvalidOperationException("Invitación no válida");
 
-            // Verificar que no ha expirado
             if (invitacion.FechaExpiracion.HasValue && DateTime.UtcNow > invitacion.FechaExpiracion)
             {
                 invitacion.Estado = EstadoInvitacion.Expirada;
@@ -99,49 +98,70 @@ namespace Quiniela.Services
 
             if (!dto.Aceptar)
             {
-                // Rechazó la invitación
                 invitacion.Estado = EstadoInvitacion.Rechazada;
                 invitacion.FechaRespuesta = DateTime.UtcNow;
                 await _invitacionRepository.UpdateInvitacionAsync(invitacion);
                 return MapToReadDto(invitacion);
             }
 
-            // Aceptó la invitación
-            // Verificar que tiene NombreEquipo
             if (string.IsNullOrWhiteSpace(dto.NombreEquipo))
                 throw new InvalidOperationException("Debes proporcionar un nombre de equipo para unirte");
 
-            // Determinar el userId — puede venir del JWT si está logueado
             int miembroUserId;
+            User? usuario;
+
             if (userId.HasValue)
             {
-                miembroUserId = userId.Value;
+                usuario = await _userRepository.GetByEmailAsync(invitacion.EmailInvitado);
+                if (usuario == null)
+                    throw new InvalidOperationException("Debes registrarte antes de aceptar la invitación");
+
+                if (usuario.Id != userId.Value)
+                    throw new InvalidOperationException("Debes iniciar sesión con la cuenta que recibió la invitación");
+
+                miembroUserId = usuario.Id;
             }
             else
             {
-                // Si no está logueado busca por email
-                var usuario = await _userRepository.GetByEmailAsync(invitacion.EmailInvitado);
+                usuario = await _userRepository.GetByEmailAsync(invitacion.EmailInvitado);
                 if (usuario == null)
                     throw new InvalidOperationException("Debes registrarte antes de aceptar la invitación");
+
                 miembroUserId = usuario.Id;
             }
 
-            // Verificar que no sea ya miembro
-            var yaMiembro = await _ligaMiembroRepository.EsMiembroAsync(miembroUserId, invitacion.LigaId);
-            if (yaMiembro)
-                throw new InvalidOperationException("Ya eres miembro de esta liga");
+            var miembroExistente = await _ligaMiembroRepository.GetMiembroAsync(miembroUserId, invitacion.LigaId);
 
-            // Crear LigaMiembro en estado Pendiente — el admin aún debe aprobar
-            await _ligaMiembroRepository.AddMiembroAsync(new LigaMiembro
+            if (miembroExistente != null)
             {
-                UserId = miembroUserId,
-                LigaId = invitacion.LigaId,
-                NombreEquipo = dto.NombreEquipo,
-                EsAdmin = false,
-                Puntos = 0,
-                Estado = EstadoMiembro.Pendiente,
-                FechaUnion = DateTime.UtcNow
-            });
+                if (miembroExistente.Estado == EstadoMiembro.Aprobado ||
+                    miembroExistente.Estado == EstadoMiembro.Pendiente)
+                {
+                    throw new InvalidOperationException("Ya tienes una solicitud activa o ya perteneces a la liga");
+                }
+
+                miembroExistente.NombreEquipo = dto.NombreEquipo;
+                miembroExistente.EsAdmin = false;
+                miembroExistente.Puntos = 0;
+                miembroExistente.Estado = EstadoMiembro.Pendiente;
+                miembroExistente.FechaUnion = DateTime.UtcNow;
+                miembroExistente.DeletedAt = null;
+
+                await _ligaMiembroRepository.UpdateMiembroAsync(miembroExistente);
+            }
+            else
+            {
+                await _ligaMiembroRepository.AddMiembroAsync(new LigaMiembro
+                {
+                    UserId = miembroUserId,
+                    LigaId = invitacion.LigaId,
+                    NombreEquipo = dto.NombreEquipo,
+                    EsAdmin = false,
+                    Puntos = 0,
+                    Estado = EstadoMiembro.Pendiente,
+                    FechaUnion = DateTime.UtcNow
+                });
+            }
 
             invitacion.Estado = EstadoInvitacion.Aceptada;
             invitacion.UserId = miembroUserId;

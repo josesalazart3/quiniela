@@ -39,8 +39,8 @@ namespace Quiniela.Services
 
         public async Task SendInvitacionLigaAsync(string emailDestino, string nombreLiga, string token)
         {
-            var frontendUrl = _config["Cors:AllowedOrigin"] ?? "http://localhost:5173";
-            var link = $"{frontendUrl}/invitacion?token={token}";
+            var frontendUrl = _config["Cors:AllowedOrigin"] ?? "http://localhost:4200";
+            var link = $"{frontendUrl}/invitacion/responder?token={token}";
 
             await SendEmailAsync(
                 emailDestino,
@@ -70,7 +70,7 @@ namespace Quiniela.Services
 
         public async Task SendAprobacionMiembroAsync(string emailDestino, string nombreLiga)
         {
-            var frontendUrl = _config["Cors:AllowedOrigin"] ?? "http://localhost:5173";
+            var frontendUrl = _config["Cors:AllowedOrigin"] ?? "http://localhost:4200";
 
             await SendEmailAsync(
                 emailDestino,
@@ -94,7 +94,7 @@ namespace Quiniela.Services
 
         public async Task SendRecuperacionPasswordAsync(string emailDestino, string token)
         {
-            var frontendUrl = _config["Cors:AllowedOrigin"] ?? "http://localhost:5173";
+            var frontendUrl = _config["Cors:AllowedOrigin"] ?? "http://localhost:4200";
             var link = $"{frontendUrl}/recuperar-password?token={token}";
 
             await SendEmailAsync(

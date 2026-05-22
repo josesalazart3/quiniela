@@ -11,13 +11,16 @@ namespace Quiniela.Services
 
         public async Task<TorneoReadDto> CreateTorneoAsync(TorneoCreateDto dto)
         {
+            if (dto.FechaFin < dto.FechaInicio)
+                throw new InvalidOperationException("La fecha de fin no puede ser menor que la fecha de inicio.");
+
             var torneo = new Torneo
             {
                 Nombre = dto.Nombre,
                 Año = dto.Año,
                 PaisSede = dto.PaisSede,
-                FechaInicio = dto.FechaInicio,
-                FechaFin = dto.FechaFin,
+                FechaInicio = DateTime.SpecifyKind(dto.FechaInicio, DateTimeKind.Utc),
+                FechaFin = DateTime.SpecifyKind(dto.FechaFin, DateTimeKind.Utc),
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -43,10 +46,17 @@ namespace Quiniela.Services
             var torneo = await _torneoRepository.GetTorneoByIdAsync(id);
             if (torneo == null) return null;
 
+            if (dto.FechaInicio.HasValue)
+                torneo.FechaInicio = DateTime.SpecifyKind(dto.FechaInicio.Value, DateTimeKind.Utc);
+
+            if (dto.FechaFin.HasValue)
+                torneo.FechaFin = DateTime.SpecifyKind(dto.FechaFin.Value, DateTimeKind.Utc);
+
+            if (torneo.FechaFin < torneo.FechaInicio)
+                throw new InvalidOperationException("La fecha de fin no puede ser menor que la fecha de inicio.");
+
             torneo.Nombre = dto.Nombre ?? torneo.Nombre;
             torneo.PaisSede = dto.PaisSede ?? torneo.PaisSede;
-            torneo.FechaInicio = dto.FechaInicio ?? torneo.FechaInicio;
-            torneo.FechaFin = dto.FechaFin ?? torneo.FechaFin;
             torneo.UpdatedAt = DateTime.UtcNow;
 
             var updated = await _torneoRepository.UpdateTorneoAsync(torneo);
@@ -59,6 +69,7 @@ namespace Quiniela.Services
         {
             return await _torneoRepository.DeleteTorneoAsync(id);
         }
+
         public async Task<IEnumerable<TorneoSelectDto>> GetTorneosSelectAsync()
         {
             var torneos = await _torneoRepository.GetTorneosSelectAsync();
