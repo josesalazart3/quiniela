@@ -1,4 +1,3 @@
-// Ranking dentro de una liga — incluye premio si es de apuestas
 namespace Quiniela.Models.DTOs
 {
     public class RankingLigaReadDto
