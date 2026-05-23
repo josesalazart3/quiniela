@@ -119,17 +119,19 @@ namespace Quiniela.Repositories
             return existing;
         }
 
-        public async Task<Partido?> IngresarResultadoAsync(int id, int golesLocal, int golesVisitante)
+        public async Task<Partido?> IngresarResultadoAsync(int id, int golesLocal, int golesVisitante, int? golesLocalPenales, int? golesVisitantePenales)
         {
-            var existing = await _context.Partidos.FindAsync(id);
-            if (existing == null) return null;
+            var partido = await _context.Partidos.FindAsync(id);
+            if (partido == null) return null;
 
-            existing.GolesLocal = golesLocal;
-            existing.GolesVisitante = golesVisitante;
-            existing.Finalizado = true;
+            partido.GolesLocal = golesLocal;
+            partido.GolesVisitante = golesVisitante;
+            partido.GolesLocalPenales = golesLocalPenales;
+            partido.GolesVisitantePenales = golesVisitantePenales;
+            partido.Finalizado = true;
 
             await _context.SaveChangesAsync();
-            return existing;
+            return partido;
         }
 
         public async Task<bool> DeletePartidoAsync(int id)

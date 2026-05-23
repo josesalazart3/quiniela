@@ -35,13 +35,20 @@ namespace Quiniela.Services
                     lm.Estado == EstadoMiembro.Aprobado)
                 .ToListAsync();
 
+            // Agrupar por usuario y tomar el registro con puntaje más alto
             var rankingUsuarios = miembros
                 .GroupBy(lm => lm.UserId)
-                .Select(g => new
+                .Select(g =>
                 {
-                    UserId = g.Key,
-                    FullName = $"{g.First().User?.FirstName} {g.First().User?.LastName}".Trim(),
-                    TotalPuntos = g.Max(lm => lm.Puntos)
+                    var mejor = g.OrderByDescending(lm => lm.Puntos).First();
+                    return new
+                    {
+                        UserId = g.Key,
+                        FullName = $"{g.First().User?.FirstName} {g.First().User?.LastName}".Trim(),
+                        TotalPuntos = mejor.Puntos,
+                        LigaId = mejor.LigaId,
+                        NombreLiga = mejor.Liga?.Nombre
+                    };
                 })
                 .OrderByDescending(r => r.TotalPuntos)
                 .Select((r, index) => new RankingGlobalUsuarioReadDto
@@ -50,6 +57,8 @@ namespace Quiniela.Services
                     UserId = r.UserId,
                     FullName = r.FullName,
                     TotalPuntos = r.TotalPuntos,
+                    LigaId = r.LigaId,
+                    NombreLiga = r.NombreLiga,
                     PremioAsignado = null
                 });
 

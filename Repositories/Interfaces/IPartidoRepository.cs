@@ -13,7 +13,7 @@ namespace Quiniela.Repositories.Interfaces
         Task<Partido?> GetPartidoByIdAsync(int id);
         Task<Partido?> GetPartidoByIdWithDetailsAsync(int id);
         Task<Partido?> UpdatePartidoAsync(Partido partido);
-        Task<Partido?> IngresarResultadoAsync(int id, int golesLocal, int golesVisitante);
+        Task<Partido?> IngresarResultadoAsync(int id, int golesLocal, int golesVisitante, int? golesLocalPenales, int? golesVisitantePenales);
         Task<bool> DeletePartidoAsync(int id);
         Task<IEnumerable<Partido>> GetPartidosFinalizadosByGrupoAsync(int grupoId);
 

@@ -78,6 +78,8 @@ builder.Services.AddScoped<IPremioDistribuidoRepository, PremioDistribuidoReposi
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IReporteService, ReporteService>();
 builder.Services.AddScoped<IRankingService, RankingService>();
+builder.Services.AddScoped<BracketService>();
+
 
 
 

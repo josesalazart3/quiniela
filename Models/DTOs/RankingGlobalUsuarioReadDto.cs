@@ -8,5 +8,7 @@ namespace Quiniela.Models.DTOs
         public string FullName { get; set; } = string.Empty;
         public int TotalPuntos { get; set; }
         public decimal? PremioAsignado { get; set; }
+        public int? LigaId { get; set; }
+        public string? NombreLiga { get; set; }
     }
 }
