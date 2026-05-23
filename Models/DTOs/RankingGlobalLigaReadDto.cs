@@ -1,4 +1,3 @@
-// Liga con mayor promedio de puntos — para el premio global de liga
 namespace Quiniela.Models.DTOs
 {
     public class RankingGlobalLigaReadDto
