@@ -346,17 +346,12 @@ namespace Quiniela.Services
             var premiosPorUserId = new Dictionary<int, decimal?>();
 
             foreach (var grupo in grupos)
-            {
                 foreach (var item in grupo.Items)
-                {
                     premiosPorUserId[item.UserId] = null;
-                }
-            }
 
             var primerGrupo = grupos.FirstOrDefault(g => g.Posicion == 1);
             var segundoGrupo = grupos.FirstOrDefault(g => g.Posicion == 2);
             var tercerGrupo = grupos.FirstOrDefault(g => g.Posicion == 3);
-
             var tercerPremioConsumido = false;
 
             if (primerGrupo != null)
@@ -382,7 +377,6 @@ namespace Quiniela.Services
                         var premio = Math.Round(montoGlobalIndividual * 0.35m / segundoGrupo.Items.Count, 2);
                         foreach (var item in segundoGrupo.Items)
                             premiosPorUserId[item.UserId] = premio;
-
                         tercerPremioConsumido = true;
                     }
                     else
@@ -429,18 +423,13 @@ namespace Quiniela.Services
             var premiosPorUserId = new Dictionary<int, decimal?>();
 
             foreach (var grupo in grupos)
-            {
                 foreach (var item in grupo.Items)
-                {
                     premiosPorUserId[item.UserId] = null;
-                }
-            }
 
             var primerGrupo = grupos.FirstOrDefault(g => g.Posicion == 1);
             var segundoGrupo = grupos.FirstOrDefault(g => g.Posicion == 2);
             var tercerGrupo = grupos.FirstOrDefault(g => g.Posicion == 3);
             var ultimoGrupo = grupos.LastOrDefault();
-
             var tercerPremioConsumido = false;
 
             if (primerGrupo != null)
@@ -450,13 +439,7 @@ namespace Quiniela.Services
                     var premio = Math.Round(premioTotal * 0.85m / primerGrupo.Items.Count, 2);
                     foreach (var item in primerGrupo.Items)
                     {
-                        resultado.Add(new LigaPrizeAssignment
-                        {
-                            Miembro = item,
-                            Posicion = 1,
-                            Premio = premio,
-                            Concepto = $"Empate 1° lugar — {nombreLiga}"
-                        });
+                        resultado.Add(new LigaPrizeAssignment { Miembro = item, Posicion = 1, Premio = premio, Concepto = $"Empate 1° lugar — {nombreLiga}" });
                         premiosPorUserId[item.UserId] = premio;
                     }
                 }
@@ -464,13 +447,7 @@ namespace Quiniela.Services
                 {
                     var item = primerGrupo.Items[0];
                     var premio = Math.Round(premioTotal * 0.50m, 2);
-                    resultado.Add(new LigaPrizeAssignment
-                    {
-                        Miembro = item,
-                        Posicion = 1,
-                        Premio = premio,
-                        Concepto = $"1° lugar — {nombreLiga}"
-                    });
+                    resultado.Add(new LigaPrizeAssignment { Miembro = item, Posicion = 1, Premio = premio, Concepto = $"1° lugar — {nombreLiga}" });
                     premiosPorUserId[item.UserId] = premio;
                 }
             }
@@ -484,29 +461,16 @@ namespace Quiniela.Services
                         var premio = Math.Round(premioTotal * 0.35m / segundoGrupo.Items.Count, 2);
                         foreach (var item in segundoGrupo.Items)
                         {
-                            resultado.Add(new LigaPrizeAssignment
-                            {
-                                Miembro = item,
-                                Posicion = 2,
-                                Premio = premio,
-                                Concepto = $"Empate 2° lugar — {nombreLiga}"
-                            });
+                            resultado.Add(new LigaPrizeAssignment { Miembro = item, Posicion = 2, Premio = premio, Concepto = $"Empate 2° lugar — {nombreLiga}" });
                             premiosPorUserId[item.UserId] = premio;
                         }
-
                         tercerPremioConsumido = true;
                     }
                     else
                     {
                         var item = segundoGrupo.Items[0];
                         var premio = Math.Round(premioTotal * 0.25m, 2);
-                        resultado.Add(new LigaPrizeAssignment
-                        {
-                            Miembro = item,
-                            Posicion = 2,
-                            Premio = premio,
-                            Concepto = $"2° lugar — {nombreLiga}"
-                        });
+                        resultado.Add(new LigaPrizeAssignment { Miembro = item, Posicion = 2, Premio = premio, Concepto = $"2° lugar — {nombreLiga}" });
                         premiosPorUserId[item.UserId] = premio;
                     }
                 }
@@ -521,12 +485,8 @@ namespace Quiniela.Services
                     {
                         resultado.Add(new LigaPrizeAssignment
                         {
-                            Miembro = item,
-                            Posicion = 3,
-                            Premio = premio,
-                            Concepto = tercerGrupo.Items.Count > 1
-                                ? $"Empate 3° lugar — {nombreLiga}"
-                                : $"3° lugar — {nombreLiga}"
+                            Miembro = item, Posicion = 3, Premio = premio,
+                            Concepto = tercerGrupo.Items.Count > 1 ? $"Empate 3° lugar — {nombreLiga}" : $"3° lugar — {nombreLiga}"
                         });
                         premiosPorUserId[item.UserId] = premio;
                     }
@@ -536,7 +496,6 @@ namespace Quiniela.Services
             if (ultimoGrupo != null)
             {
                 var yaPremiados = ultimoGrupo.Items.Any(x => premiosPorUserId[x.UserId].HasValue);
-
                 if (!yaPremiados)
                 {
                     var premio = ultimoGrupo.Items.Count > 1
@@ -547,12 +506,8 @@ namespace Quiniela.Services
                     {
                         resultado.Add(new LigaPrizeAssignment
                         {
-                            Miembro = item,
-                            Posicion = ultimoGrupo.Posicion,
-                            Premio = premio,
-                            Concepto = ultimoGrupo.Items.Count > 1
-                                ? $"Empate último lugar — {nombreLiga}"
-                                : $"Último lugar — {nombreLiga}"
+                            Miembro = item, Posicion = ultimoGrupo.Posicion, Premio = premio,
+                            Concepto = ultimoGrupo.Items.Count > 1 ? $"Empate último lugar — {nombreLiga}" : $"Último lugar — {nombreLiga}"
                         });
                         premiosPorUserId[item.UserId] = premio;
                     }
@@ -560,21 +515,9 @@ namespace Quiniela.Services
             }
 
             foreach (var grupo in grupos)
-            {
                 foreach (var item in grupo.Items)
-                {
                     if (!resultado.Any(r => r.Miembro.UserId == item.UserId))
-                    {
-                        resultado.Add(new LigaPrizeAssignment
-                        {
-                            Miembro = item,
-                            Posicion = grupo.Posicion,
-                            Premio = null,
-                            Concepto = string.Empty
-                        });
-                    }
-                }
-            }
+                        resultado.Add(new LigaPrizeAssignment { Miembro = item, Posicion = grupo.Posicion, Premio = null, Concepto = string.Empty });
 
             return resultado
                 .OrderBy(r => r.Posicion)
@@ -588,21 +531,13 @@ namespace Quiniela.Services
             Func<T, int> scoreSelector)
         {
             var grupos = new List<CompetitionGroup<T>>();
-
-            var ordered = items
-                .OrderByDescending(scoreSelector)
-                .ToList();
-
+            var ordered = items.OrderByDescending(scoreSelector).ToList();
             int posicion = 1;
+
             foreach (var group in ordered.GroupBy(scoreSelector))
             {
                 var groupItems = group.ToList();
-                grupos.Add(new CompetitionGroup<T>
-                {
-                    Posicion = posicion,
-                    Items = groupItems
-                });
-
+                grupos.Add(new CompetitionGroup<T> { Posicion = posicion, Items = groupItems });
                 posicion += groupItems.Count;
             }
 
@@ -614,7 +549,6 @@ namespace Quiniela.Services
             Func<T, int> scoreSelector)
         {
             var grupos = BuildCompetitionGroups(items, scoreSelector);
-
             return grupos.SelectMany(g => g.Items.Select(item => new CompetitionPosition<T>
             {
                 Posicion = g.Posicion,

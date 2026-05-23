@@ -109,5 +109,12 @@ namespace Quiniela.Controllers
             if (!removido) return NotFound();
             return NoContent();
         }
+
+        [HttpGet("torneo/{torneoId:int}/mejores-terceros")]
+        public async Task<IActionResult> GetMejoresTerceros(int torneoId)
+        {
+            var terceros = await _grupoService.GetMejoresTercerosAsync(torneoId);
+            return Ok(terceros);
+        }
     }
 }

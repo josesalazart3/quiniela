@@ -16,6 +16,8 @@ namespace Quiniela.Repositories.Interfaces
         Task AddEquipoAGrupoAsync(GrupoEquipo grupoEquipo);
         Task<bool> RemoveEquipoDeGrupoAsync(int grupoId, int equipoId);
         Task AsignarVariosEquiposAsync(List<GrupoEquipo> grupoEquipos);
+        Task<IEnumerable<(Grupo Grupo, ClasificacionGrupo Tercero)>> GetTercerosGruposAsync(int torneoId);
+
 
     }
 }

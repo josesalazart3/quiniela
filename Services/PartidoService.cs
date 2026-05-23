@@ -12,6 +12,7 @@ namespace Quiniela.Services
         IEstadioRepository estadioRepository,
         IClasificacionGrupoRepository clasificacionRepository,
         IPrediccionRepository prediccionRepository,
+        BracketService bracketService,
         INotificacionService notificacionService) : IPartidoService
     {
         private readonly IPartidoRepository _partidoRepository = partidoRepository;
@@ -21,6 +22,8 @@ namespace Quiniela.Services
         private readonly IClasificacionGrupoRepository _clasificacionRepository = clasificacionRepository;
         private readonly IPrediccionRepository _prediccionRepository = prediccionRepository;
         private readonly INotificacionService _notificacionService = notificacionService;
+        private readonly BracketService _bracketService = bracketService;
+
 
         public async Task<PartidoReadDto> CreatePartidoAsync(PartidoCreateDto dto)
         {
@@ -122,19 +125,36 @@ namespace Quiniela.Services
             if (partido.Finalizado)
                 throw new InvalidOperationException("El partido ya fue finalizado");
 
-            var updated = await _partidoRepository.IngresarResultadoAsync(id, dto.GolesLocal, dto.GolesVisitante);
+            // Validar penales — solo en eliminatorias con empate
+            if (partido.FaseId > 1 &&
+                dto.GolesLocal == dto.GolesVisitante &&
+                (dto.GolesLocalPenales == null || dto.GolesVisitantePenales == null))
+                throw new InvalidOperationException("En eliminatorias con empate debes ingresar el resultado de penales");
+
+            var updated = await _partidoRepository.IngresarResultadoAsync(
+                id,
+                dto.GolesLocal,
+                dto.GolesVisitante,
+                dto.GolesLocalPenales,
+                dto.GolesVisitantePenales
+            );
             if (updated == null) return null;
 
+            // 1. Actualizar clasificación si es fase de grupos
             if (partido.GrupoId.HasValue && partido.EquipoLocalId.HasValue && partido.EquipoVisitanteId.HasValue)
                 await ActualizarClasificacionAsync(partido, dto.GolesLocal, dto.GolesVisitante);
 
+            // 2. Calcular puntos de predicciones
             await CalcularPuntosPrediccionesAsync(id, dto.GolesLocal, dto.GolesVisitante);
 
+            // 3. Actualizar bracket automáticamente
+            await _bracketService.ActualizarBracketAsync(partido, dto.GolesLocal, dto.GolesVisitante, dto.GolesLocalPenales, dto.GolesVisitantePenales);
+
+            // 4. Notificar SignalR
             await _notificacionService.NotificarResultadoPartidoAsync(partido.TorneoId, id);
 
             var predicciones = await _prediccionRepository.GetPrediccionesByPartidoAsync(id);
             var ligasAfectadas = predicciones.Select(p => p.LigaId).Distinct();
-
             foreach (var ligaId in ligasAfectadas)
                 await _notificacionService.NotificarRankingLigaAsync(ligaId);
 
@@ -273,6 +293,8 @@ namespace Quiniela.Services
             },
             GolesLocal = partido.GolesLocal,
             GolesVisitante = partido.GolesVisitante,
+            GolesLocalPenales = partido.GolesLocalPenales,
+            GolesVisitantePenales = partido.GolesVisitantePenales,
             Finalizado = partido.Finalizado
         };
     }

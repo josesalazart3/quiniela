@@ -169,6 +169,29 @@ namespace Quiniela.Services
             return true;
         }
 
+        public async Task<IEnumerable<MejoresTercerosDto>> GetMejoresTercerosAsync(int torneoId)
+        {
+            var terceros = await _grupoRepository.GetTercerosGruposAsync(torneoId);
+
+            return terceros
+                .OrderByDescending(t => t.Tercero.Puntos)
+                .ThenByDescending(t => t.Tercero.DiferenciaGoles)
+                .ThenByDescending(t => t.Tercero.GolesAFavor)
+                .Select(t => new MejoresTercerosDto
+                {
+                    GrupoId = t.Grupo.Id,
+                    GrupoNombre = t.Grupo.Nombre,
+                    EquipoId = t.Tercero.EquipoId,
+                    EquipoNombre = t.Tercero.Equipo?.Nombre ?? string.Empty,
+                    BanderaUrl = t.Tercero.Equipo?.BanderaUrl ?? string.Empty,
+                    Puntos = t.Tercero.Puntos,
+                    DiferenciaGoles = t.Tercero.DiferenciaGoles,
+                    GolesAFavor = t.Tercero.GolesAFavor,
+                    PartidosJugados = t.Tercero.PartidosJugados,
+                    Posicion = 3
+                });
+        }
+
         public async Task<IEnumerable<ClasificacionGrupoReadDto>> GetClasificacionByGrupoAsync(int grupoId)
         {
             var clasificaciones = await _clasificacionRepository.GetClasificacionByGrupoAsync(grupoId);

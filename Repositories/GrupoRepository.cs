@@ -75,6 +75,30 @@ namespace Quiniela.Repositories
             await _context.SaveChangesAsync();
             return existing;
         }
+        public async Task<IEnumerable<(Grupo Grupo, ClasificacionGrupo Tercero)>> GetTercerosGruposAsync(int torneoId)
+        {
+            var result = new List<(Grupo, ClasificacionGrupo)>();
+
+            var grupos = await _context.Grupos
+                .Where(g => g.TorneoId == torneoId)
+                .ToListAsync();
+
+            foreach (var grupo in grupos)
+            {
+                var clasificacion = await _context.ClasificacionGrupos
+                    .Include(c => c.Equipo)
+                    .Where(c => c.GrupoId == grupo.Id)
+                    .OrderByDescending(c => c.Puntos)
+                    .ThenByDescending(c => c.DiferenciaGoles)
+                    .ThenByDescending(c => c.GolesAFavor)
+                    .ToListAsync();
+
+                if (clasificacion.Count >= 3)
+                    result.Add((grupo, clasificacion[2]));
+            }
+
+            return result;
+        }
 
         public async Task<bool> DeleteGrupoAsync(int id)
         {
@@ -113,5 +137,7 @@ namespace Quiniela.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+
     }
 }

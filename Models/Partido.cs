@@ -40,6 +40,8 @@ namespace Quiniela.Models
 
         public ICollection<Prediccion> Predicciones { get; set; } = new List<Prediccion>();
         public DateTime? DeletedAt { get; set; }
+        public int? GolesLocalPenales { get; set; }
+        public int? GolesVisitantePenales { get; set; }
 
     }
 }

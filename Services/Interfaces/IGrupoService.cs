@@ -15,6 +15,8 @@ namespace Quiniela.Services.Interfaces
         Task<bool> RemoverEquipoDeGrupoAsync(int grupoId, int equipoId);
         Task<GrupoReadDto> AsignarVariosEquiposAGrupoAsync(int grupoId, GrupoEquipoAsignarVariosDto dto);
         Task<IEnumerable<ClasificacionGrupoReadDto>> GetClasificacionByGrupoAsync(int grupoId);
+        Task<IEnumerable<MejoresTercerosDto>> GetMejoresTercerosAsync(int torneoId);
+
 
     }
 }

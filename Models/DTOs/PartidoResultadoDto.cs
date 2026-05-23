@@ -8,5 +8,7 @@ namespace Quiniela.Models.DTOs
     {
         public int GolesLocal { get; set; }
         public int GolesVisitante { get; set; }
+        public int? GolesLocalPenales { get; set; }
+        public int? GolesVisitantePenales { get; set; }
     }
 }
