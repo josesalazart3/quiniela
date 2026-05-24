@@ -32,10 +32,12 @@ builder.Services.AddControllers()
 
 builder.Services.AddSingleton(provider =>
 {
-    string key = "62219311522870687600240042448129";
-    string iv = "8458586964174710";
+    var config = provider.GetRequiredService<IConfiguration>();
+    var key = config["Crypto:Key"] ?? throw new InvalidOperationException("Crypto:Key no configurada");
+    var iv = config["Crypto:IV"] ?? throw new InvalidOperationException("Crypto:IV no configurada");
     return new CryptoHelper(key, iv);
 });
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
