@@ -251,6 +251,9 @@ namespace Quiniela.Services
             CreadaPor = liga.CreatedByUser == null ? string.Empty
                 : $"{liga.CreatedByUser.FirstName} {liga.CreatedByUser.LastName}".Trim(),
             TotalMiembros = liga.LigaMiembros?.Count(lm => lm.Estado == EstadoMiembro.Aprobado) ?? 0,
+            FondoTotal = liga.EsDeApuestas
+        ? liga.LigaMiembros?.Count(lm => lm.Estado == EstadoMiembro.Aprobado) * (liga.PrecioPorUnirse ?? 0) * 0.95m
+        : null,
             CreatedAt = liga.CreatedAt
         };
 
