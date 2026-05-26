@@ -8,6 +8,8 @@ namespace Quiniela.Models.DTOs
         public decimal? PrecioPorUnirse { get; set; }
         public int TorneoId { get; set; }
         public string CreadaPor { get; set; } = string.Empty;
+        public decimal? FondoTotal { get; set; }
+
         public int TotalMiembros { get; set; }
         public DateTime CreatedAt { get; set; }
     }

@@ -43,7 +43,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    //options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))*/
+    options.UseNpgsql(builder.Configuration["ConnectionStrings__DefaultConnection"])
            .LogTo(Console.WriteLine, LogLevel.Information)
            .EnableSensitiveDataLogging(builder.Environment.IsDevelopment()));
 
