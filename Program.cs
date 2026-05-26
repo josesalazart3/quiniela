@@ -57,19 +57,31 @@ Console.WriteLine($"DEBUG: La cadena de conexión leída es: '{connectionString}
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    var connectionString = builder.Configuration["ConnectionStrings__DefaultConnection"];
+    // Leer la cadena de conexión de diferentes fuentes
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                           ?? builder.Configuration["ConnectionStrings__DefaultConnection"]
+                           ?? builder.Configuration["DATABASE_URL"];
     
-    // Si la cadena es una URL, vamos a convertirla a un formato que Npgsql entienda sin errores
-    if (connectionString.StartsWith("postgres://"))
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("No se encontró ninguna cadena de conexión configurada");
+    }
+    
+    Console.WriteLine($"DEBUG: Usando cadena de conexión: '{connectionString}'");
+    
+    // Si la cadena es una URL de PostgreSQL, convertirla al formato estándar
+    if (connectionString.StartsWith("postgres://") || connectionString.StartsWith("postgresql://"))
     {
         var uri = new Uri(connectionString);
         var username = uri.UserInfo.Split(':')[0];
         var password = uri.UserInfo.Split(':')[1];
         var host = uri.Host;
-        var port = uri.Port;
+        var port = uri.Port > 0 ? uri.Port : 5432;
         var database = uri.AbsolutePath.TrimStart('/');
         
         connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+        
+        Console.WriteLine($"DEBUG: Cadena convertida a: '{connectionString}'");
     }
 
     options.UseNpgsql(connectionString)
