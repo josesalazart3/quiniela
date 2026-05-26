@@ -49,11 +49,36 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 Console.WriteLine($"DEBUG: La cadena de conexión leída es: '{connectionString}'");
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+//builder.Services.AddDbContext<AppDbContext>(options =>
     //options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))*/
-    options.UseNpgsql(builder.Configuration["ConnectionStrings__DefaultConnection"])
+  //  options.UseNpgsql(builder.Configuration["ConnectionStrings__DefaultConnection"])
+    //       .LogTo(Console.WriteLine, LogLevel.Information)
+      //     .EnableSensitiveDataLogging(builder.Environment.IsDevelopment()));
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    var connectionString = builder.Configuration["ConnectionStrings__DefaultConnection"];
+    
+    // Si la cadena es una URL, vamos a convertirla a un formato que Npgsql entienda sin errores
+    if (connectionString.StartsWith("postgres://"))
+    {
+        var uri = new Uri(connectionString);
+        var username = uri.UserInfo.Split(':')[0];
+        var password = uri.UserInfo.Split(':')[1];
+        var host = uri.Host;
+        var port = uri.Port;
+        var database = uri.AbsolutePath.TrimStart('/');
+        
+        connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+    }
+
+    options.UseNpgsql(connectionString)
            .LogTo(Console.WriteLine, LogLevel.Information)
-           .EnableSensitiveDataLogging(builder.Environment.IsDevelopment()));
+           .EnableSensitiveDataLogging(builder.Environment.IsDevelopment());
+});
+
+
+
 
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
