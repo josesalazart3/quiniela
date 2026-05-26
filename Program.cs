@@ -43,11 +43,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                       ?? builder.Configuration["ConnectionStrings__DefaultConnection"]
-                       ?? builder.Configuration["DATABASE_URL"];
+//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+  //                     ?? builder.Configuration["ConnectionStrings__DefaultConnection"]
+    //                   ?? builder.Configuration["DATABASE_URL"];
 
-Console.WriteLine($"DEBUG: La cadena de conexión leída es: '{connectionString}'");
+//Console.WriteLine($"DEBUG: La cadena de conexión leída es: '{connectionString}'");
 
 //builder.Services.AddDbContext<AppDbContext>(options =>
     //options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))*/
