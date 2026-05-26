@@ -197,7 +197,7 @@ builder.Services.AddCors(options =>
                 "http://localhost:4300",
                 "https://localhost:4300",
                 "http://localhost",
-                "https://quiniela-production-62e5.up.railway.app"
+                "https://frontend-quiniela.vercel.app"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
