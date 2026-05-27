@@ -381,16 +381,19 @@ namespace Quiniela.Services
                     }
                     else
                     {
-                        premiosPorUserId[segundoGrupo.Items[0].UserId] = Math.Round(montoGlobalIndividual * 0.25m, 2);
+                        premiosPorUserId[segundoGrupo.Items[0].UserId] = Math.Round(montoGlobalIndividual * 0.30m, 2);
                     }
                 }
 
                 if (!tercerPremioConsumido && tercerGrupo != null)
                 {
-                    var premio = tercerGrupo.Items.Count > 1
-                        ? Math.Round(montoGlobalIndividual * 0.10m / tercerGrupo.Items.Count, 2)
-                        : Math.Round(montoGlobalIndividual * 0.10m, 2);
+                    //var premio = tercerGrupo.Items.Count > 1
+                    //? Math.Round(montoGlobalIndividual * 0.10m / tercerGrupo.Items.Count, 2)
+                    //: Math.Round(montoGlobalIndividual * 0.10m, 2);
 
+                    var premio = tercerGrupo.Items.Count > 1
+                        ? Math.Round(montoGlobalIndividual * 0.20m / tercerGrupo.Items.Count, 2)
+                        : Math.Round(montoGlobalIndividual * 0.20m, 2);
                     foreach (var item in tercerGrupo.Items)
                         premiosPorUserId[item.UserId] = premio;
                 }
@@ -419,19 +422,14 @@ namespace Quiniela.Services
         private static List<LigaPrizeAssignment> CalcularPremiosLiga(List<LigaMiembro> miembros, decimal premioTotal, string nombreLiga)
         {
             var grupos = BuildCompetitionGroups(miembros, x => x.Puntos);
-            var resultado = new List<LigaPrizeAssignment>();
-            var premiosPorUserId = new Dictionary<int, decimal?>();
-
-            foreach (var grupo in grupos)
-                foreach (var item in grupo.Items)
-                    premiosPorUserId[item.UserId] = null;
+            var premiosPorUserId = miembros.ToDictionary(m => m.UserId, m => (decimal?)null);
+            var conceptoPorUserId = miembros.ToDictionary(m => m.UserId, m => string.Empty);
 
             var primerGrupo = grupos.FirstOrDefault(g => g.Posicion == 1);
             var segundoGrupo = grupos.FirstOrDefault(g => g.Posicion == 2);
             var tercerGrupo = grupos.FirstOrDefault(g => g.Posicion == 3);
-            var ultimoGrupo = grupos.LastOrDefault();
-            var tercerPremioConsumido = false;
 
+            // 1er lugar
             if (primerGrupo != null)
             {
                 if (primerGrupo.Items.Count > 1)
@@ -439,87 +437,98 @@ namespace Quiniela.Services
                     var premio = Math.Round(premioTotal * 0.85m / primerGrupo.Items.Count, 2);
                     foreach (var item in primerGrupo.Items)
                     {
-                        resultado.Add(new LigaPrizeAssignment { Miembro = item, Posicion = 1, Premio = premio, Concepto = $"Empate 1° lugar — {nombreLiga}" });
                         premiosPorUserId[item.UserId] = premio;
+                        conceptoPorUserId[item.UserId] = $"Empate 1° lugar — {nombreLiga}";
                     }
                 }
                 else
                 {
                     var item = primerGrupo.Items[0];
-                    var premio = Math.Round(premioTotal * 0.50m, 2);
-                    resultado.Add(new LigaPrizeAssignment { Miembro = item, Posicion = 1, Premio = premio, Concepto = $"1° lugar — {nombreLiga}" });
-                    premiosPorUserId[item.UserId] = premio;
-                }
-            }
+                    premiosPorUserId[item.UserId] = Math.Round(premioTotal * 0.50m, 2);
+                    conceptoPorUserId[item.UserId] = $"1° lugar — {nombreLiga}";
 
-            if (primerGrupo == null || primerGrupo.Items.Count == 1)
-            {
-                if (segundoGrupo != null)
-                {
-                    if (segundoGrupo.Items.Count > 1)
+                    // 2do lugar — solo si no hay empate en 1ro
+                    if (segundoGrupo != null)
                     {
-                        var premio = Math.Round(premioTotal * 0.35m / segundoGrupo.Items.Count, 2);
-                        foreach (var item in segundoGrupo.Items)
+                        if (segundoGrupo.Items.Count > 1)
                         {
-                            resultado.Add(new LigaPrizeAssignment { Miembro = item, Posicion = 2, Premio = premio, Concepto = $"Empate 2° lugar — {nombreLiga}" });
-                            premiosPorUserId[item.UserId] = premio;
+                            var premio = Math.Round(premioTotal * 0.35m / segundoGrupo.Items.Count, 2);
+                            foreach (var s in segundoGrupo.Items)
+                            {
+                                premiosPorUserId[s.UserId] = premio;
+                                conceptoPorUserId[s.UserId] = $"Empate 2° lugar — {nombreLiga}";
+                            }
                         }
-                        tercerPremioConsumido = true;
-                    }
-                    else
-                    {
-                        var item = segundoGrupo.Items[0];
-                        var premio = Math.Round(premioTotal * 0.25m, 2);
-                        resultado.Add(new LigaPrizeAssignment { Miembro = item, Posicion = 2, Premio = premio, Concepto = $"2° lugar — {nombreLiga}" });
-                        premiosPorUserId[item.UserId] = premio;
-                    }
-                }
-
-                if (!tercerPremioConsumido && tercerGrupo != null)
-                {
-                    var premio = tercerGrupo.Items.Count > 1
-                        ? Math.Round(premioTotal * 0.10m / tercerGrupo.Items.Count, 2)
-                        : Math.Round(premioTotal * 0.10m, 2);
-
-                    foreach (var item in tercerGrupo.Items)
-                    {
-                        resultado.Add(new LigaPrizeAssignment
+                        else
                         {
-                            Miembro = item, Posicion = 3, Premio = premio,
-                            Concepto = tercerGrupo.Items.Count > 1 ? $"Empate 3° lugar — {nombreLiga}" : $"3° lugar — {nombreLiga}"
-                        });
-                        premiosPorUserId[item.UserId] = premio;
+                            var s = segundoGrupo.Items[0];
+                            premiosPorUserId[s.UserId] = Math.Round(premioTotal * 0.25m, 2);
+                            conceptoPorUserId[s.UserId] = $"2° lugar — {nombreLiga}";
+
+                            // 3er lugar — solo si no hay empate en 2do
+                            if (tercerGrupo != null)
+                            {
+                                if (tercerGrupo.Items.Count > 1)
+                                {
+                                    var premio = Math.Round(premioTotal * 0.10m / tercerGrupo.Items.Count, 2);
+                                    foreach (var t in tercerGrupo.Items)
+                                    {
+                                        premiosPorUserId[t.UserId] = premio;
+                                        conceptoPorUserId[t.UserId] = $"Empate 3° lugar — {nombreLiga}";
+                                    }
+                                }
+                                else
+                                {
+                                    var t = tercerGrupo.Items[0];
+                                    premiosPorUserId[t.UserId] = Math.Round(premioTotal * 0.10m, 2);
+                                    conceptoPorUserId[t.UserId] = $"3° lugar — {nombreLiga}";
+                                }
+                            }
+                        }
                     }
                 }
             }
 
-            if (ultimoGrupo != null)
+            // 4to lugar — SIEMPRE se evalua independientemente
+            // Buscar quien esta en la posicion 4 del ranking real (considerando empates arriba)
+            var cuartoGrupo = grupos
+                .Where(g => !g.Items.Any(x => premiosPorUserId[x.UserId].HasValue))
+                .Skip(grupos.Count(g => g.Items.Any(x => premiosPorUserId[x.UserId].HasValue)))
+                .FirstOrDefault();
+
+            // Simplificado: el primer grupo sin premio despues de los que ya tienen premio
+            var gruposSinPremio = grupos
+                .Where(g => !g.Items.Any(x => premiosPorUserId[x.UserId].HasValue))
+                .ToList();
+
+            // El 4to premio va al primer grupo que aun no tiene premio
+            // SOLO si ya se repartieron los premios de arriba (hay al menos 1 ganador)
+            var hayGanadores = premiosPorUserId.Any(x => x.Value.HasValue);
+            if (hayGanadores && gruposSinPremio.Any())
             {
-                var yaPremiados = ultimoGrupo.Items.Any(x => premiosPorUserId[x.UserId].HasValue);
-                if (!yaPremiados)
-                {
-                    var premio = ultimoGrupo.Items.Count > 1
-                        ? Math.Round(premioTotal * 0.10m / ultimoGrupo.Items.Count, 2)
-                        : Math.Round(premioTotal * 0.10m, 2);
+                var grupoCuartoPremio = gruposSinPremio.First();
+                var premio4 = grupoCuartoPremio.Items.Count > 1
+                    ? Math.Round(premioTotal * 0.10m / grupoCuartoPremio.Items.Count, 2)
+                    : Math.Round(premioTotal * 0.10m, 2);
 
-                    foreach (var item in ultimoGrupo.Items)
-                    {
-                        resultado.Add(new LigaPrizeAssignment
-                        {
-                            Miembro = item, Posicion = ultimoGrupo.Posicion, Premio = premio,
-                            Concepto = ultimoGrupo.Items.Count > 1 ? $"Empate último lugar — {nombreLiga}" : $"Último lugar — {nombreLiga}"
-                        });
-                        premiosPorUserId[item.UserId] = premio;
-                    }
+                foreach (var c in grupoCuartoPremio.Items)
+                {
+                    premiosPorUserId[c.UserId] = premio4;
+                    conceptoPorUserId[c.UserId] = grupoCuartoPremio.Items.Count > 1
+                        ? $"Empate 4° lugar — {nombreLiga}"
+                        : $"4° lugar — {nombreLiga}";
                 }
             }
 
-            foreach (var grupo in grupos)
-                foreach (var item in grupo.Items)
-                    if (!resultado.Any(r => r.Miembro.UserId == item.UserId))
-                        resultado.Add(new LigaPrizeAssignment { Miembro = item, Posicion = grupo.Posicion, Premio = null, Concepto = string.Empty });
-
-            return resultado
+            // Construir resultado final
+            return grupos
+                .SelectMany(g => g.Items.Select(item => new LigaPrizeAssignment
+                {
+                    Miembro = item,
+                    Posicion = g.Posicion,
+                    Premio = premiosPorUserId[item.UserId],
+                    Concepto = conceptoPorUserId[item.UserId]
+                }))
                 .OrderBy(r => r.Posicion)
                 .ThenByDescending(r => r.Miembro.Puntos)
                 .ThenBy(r => r.Miembro.UserId)
