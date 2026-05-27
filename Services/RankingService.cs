@@ -67,7 +67,9 @@ namespace Quiniela.Services
                     .ToList();
             }
 
-            var premioTotal = miembros.Count * (liga.PrecioPorUnirse ?? 0m) * 0.95m;
+            //var premioTotal = miembros.Count * (liga.PrecioPorUnirse ?? 0m) * 0.95m;
+            var premioTotal = miembros.Count * (liga.PrecioPorUnirse ?? 0m);
+
             var asignaciones = CalcularPremiosLiga(miembros, premioTotal, liga.Nombre);
 
             return asignaciones.Select(a => new RankingLigaReadDto
@@ -163,7 +165,8 @@ namespace Quiniela.Services
                 if (!miembros.Any())
                     continue;
 
-                var premioTotalLiga = miembros.Count * (liga.PrecioPorUnirse ?? 0m) * 0.95m;
+                //var premioTotalLiga = miembros.Count * (liga.PrecioPorUnirse ?? 0m) * 0.95m;
+                var premioTotalLiga = miembros.Count * (liga.PrecioPorUnirse ?? 0m);
                 var asignacionesLiga = CalcularPremiosLiga(miembros, premioTotalLiga, liga.Nombre);
 
                 foreach (var a in asignacionesLiga.Where(x => x.Premio.HasValue))
