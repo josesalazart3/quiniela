@@ -106,7 +106,7 @@ namespace Quiniela.Migrations
                     b.HasIndex("GrupoId", "EquipoId")
                         .IsUnique();
 
-                    b.ToTable("ClasificacionGrupos");
+                    b.ToTable("ClasificacionGrupos", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.Equipo", b =>
@@ -139,7 +139,7 @@ namespace Quiniela.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Equipos");
+                    b.ToTable("Equipos", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.Estadio", b =>
@@ -167,7 +167,7 @@ namespace Quiniela.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Estadios");
+                    b.ToTable("Estadios", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.Fase", b =>
@@ -198,7 +198,7 @@ namespace Quiniela.Migrations
 
                     b.HasIndex("TorneoId");
 
-                    b.ToTable("Fases");
+                    b.ToTable("Fases", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.Grupo", b =>
@@ -226,7 +226,7 @@ namespace Quiniela.Migrations
 
                     b.HasIndex("TorneoId");
 
-                    b.ToTable("Grupos");
+                    b.ToTable("Grupos", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.GrupoEquipo", b =>
@@ -241,7 +241,7 @@ namespace Quiniela.Migrations
 
                     b.HasIndex("EquipoId");
 
-                    b.ToTable("GrupoEquipos");
+                    b.ToTable("GrupoEquipos", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.InvitacionLiga", b =>
@@ -290,7 +290,7 @@ namespace Quiniela.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("InvitacionesLiga");
+                    b.ToTable("InvitacionesLiga", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.Liga", b =>
@@ -332,7 +332,7 @@ namespace Quiniela.Migrations
 
                     b.HasIndex("TorneoId");
 
-                    b.ToTable("Ligas");
+                    b.ToTable("Ligas", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.LigaMiembro", b =>
@@ -366,7 +366,7 @@ namespace Quiniela.Migrations
 
                     b.HasIndex("LigaId");
 
-                    b.ToTable("LigaMiembros");
+                    b.ToTable("LigaMiembros", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.Partido", b =>
@@ -436,7 +436,7 @@ namespace Quiniela.Migrations
 
                     b.HasIndex("TorneoId");
 
-                    b.ToTable("Partidos");
+                    b.ToTable("Partidos", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.PasswordResetToken", b =>
@@ -470,7 +470,7 @@ namespace Quiniela.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PasswordResetTokens");
+                    b.ToTable("PasswordResetTokens", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.Prediccion", b =>
@@ -517,7 +517,7 @@ namespace Quiniela.Migrations
                     b.HasIndex("UserId", "LigaId", "PartidoId")
                         .IsUnique();
 
-                    b.ToTable("Predicciones");
+                    b.ToTable("Predicciones", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.PremioDistribuido", b =>
@@ -558,7 +558,7 @@ namespace Quiniela.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PremiosDistribuidos");
+                    b.ToTable("PremiosDistribuidos", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.Role", b =>
@@ -582,7 +582,7 @@ namespace Quiniela.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
 
                     b.HasData(
                         new
@@ -635,7 +635,7 @@ namespace Quiniela.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Torneos");
+                    b.ToTable("Torneos", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.User", b =>
@@ -682,7 +682,7 @@ namespace Quiniela.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.HasData(
                         new
@@ -732,7 +732,7 @@ namespace Quiniela.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserSessions");
+                    b.ToTable("UserSessions", (string)null);
                 });
 
             modelBuilder.Entity("Quiniela.Models.ClasificacionGrupo", b =>
