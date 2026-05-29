@@ -198,7 +198,8 @@ builder.Services.AddCors(options =>
                 //"https://localhost:4300",
                 //"http://localhost",
                 //"https://frontend-quiniela.vercel.app"
-                "https://frontend-quiniela-dpm84a7z0-josesalazart3s-projects.vercel.app"
+                //"https://frontend-quiniela-dpm84a7z0-josesalazart3s-projects.vercel.app"
+                "https://frontend-quiniela.vercel.app/login"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
