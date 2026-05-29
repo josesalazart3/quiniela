@@ -13,6 +13,7 @@ using Quiniela.Services;
 using Quiniela.Services.Interfaces;
 using Quiniela.Utils;
 using System.Text;
+using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,18 +44,6 @@ builder.Services.AddSingleton(provider =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
-//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-  //                     ?? builder.Configuration["ConnectionStrings__DefaultConnection"]
-    //                   ?? builder.Configuration["DATABASE_URL"];
-
-//Console.WriteLine($"DEBUG: La cadena de conexión leída es: '{connectionString}'");
-
-//builder.Services.AddDbContext<AppDbContext>(options =>
-    //options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))*/
-  //  options.UseNpgsql(builder.Configuration["ConnectionStrings__DefaultConnection"])
-    //       .LogTo(Console.WriteLine, LogLevel.Information)
-      //     .EnableSensitiveDataLogging(builder.Environment.IsDevelopment()));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -91,8 +80,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 
-
-
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -126,6 +113,13 @@ builder.Services.AddScoped<ILigaService, LigaService>();
 
 builder.Services.AddScoped<IUserSessionRepository, UserSessionRepository>();
 
+// Configuración de Resend para envío de correos
+builder.Services.AddResend(options =>
+{
+    options.ApiKey = builder.Configuration["Resend:ApiKey"] ?? throw new InvalidOperationException("Resend:ApiKey no configurada");
+});
+
+// Registrar el servicio de email con Resend
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddScoped<IInvitacionLigaRepository, InvitacionLigaRepository>();
@@ -193,14 +187,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins(
-                //"http://localhost:4200",
-                //"https://localhost:4200",
-                //"http://localhost:4300",
-                //"https://localhost:4300",
-                //"http://localhost",
                 "https://frontend-quiniela.vercel.app"
-                //"https://frontend-quiniela-hofb9k5xu-josesalazart3s-projects.vercel.app"
-                //"https://frontend-quiniela.vercel.app/login"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
