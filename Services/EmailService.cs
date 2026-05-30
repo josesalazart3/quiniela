@@ -1,8 +1,5 @@
-
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit
-
+using Resend;
+//aaaaaaaaaaaaaaaaa
 namespace Quiniela.Services
 {
     public interface IEmailService
