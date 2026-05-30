@@ -12,6 +12,7 @@ RUN dotnet restore
 
 
 COPY . .
+RUN dotnet restore --force
 RUN dotnet publish -c Release -o /app/publish
 
 
