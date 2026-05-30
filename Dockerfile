@@ -10,7 +10,7 @@ COPY Quiniela.csproj ./
 RUN dotnet restore Quiniela.csproj
 
 COPY . .
-RUN dotnet publish Quiniela.csproj -c Release -o /app/publish --no-incremental
+RUN dotnet publish Quiniela.csproj -c Release -o /app/publish
 
 
 FROM base AS final
