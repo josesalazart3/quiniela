@@ -28,6 +28,9 @@ services:
       Jwt__Audience: ${JWT_AUDIENCE}
       Jwt__ExpiresInMinutes: ${JWT_EXPIRES_IN_MINUTES}
       Resend__ApiKey: ${RESEND_API_KEY}
+      GitHub__ClientId: ${GITHUB_CLIENT_ID}
+      GitHub__ClientSecret: ${GITHUB_CLIENT_SECRET}
+      GitHub__CallbackUrl: ${GITHUB_CALLBACK_URL}
       Crypto__Key: ${CRYPTO_KEY}
       Crypto__IV: ${CRYPTO_IV}
     ports:

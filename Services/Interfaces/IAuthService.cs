@@ -13,6 +13,6 @@ namespace Quiniela.Services.Interfaces
 
         Task ForgotPasswordAsync(string email);
         Task RecoverPasswordAsync(RecoverPasswordDto dto);
-
+        Task<LoginResponseDto> GitHubLoginAsync(string code, string ipOrigen, string userAgent);
     }
 }
