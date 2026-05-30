@@ -17,7 +17,7 @@ namespace Quiniela.Services
         private readonly IResend _resend = resend;
         private readonly IConfiguration _config = config;
 
-        private const string From = "Quiniela Mundial 2026 <noreply@uniondeprofesionales.com>";
+        private const string From = "Quiniela Mundial 2026 <noreply@uniondeprofesionales.com>"; //emaaaaaaaaaaaaaaaaaaaaaail
 
         private async Task SendEmailAsync(string emailDestino, string subject, string htmlBody)
         {

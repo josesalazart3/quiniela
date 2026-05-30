@@ -6,13 +6,11 @@ EXPOSE 8080
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-
-COPY *.csproj ./
-RUN dotnet restore
-
+COPY Quiniela.csproj ./
+RUN dotnet restore Quiniela.csproj
 
 COPY . .
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish Quiniela.csproj -c Release -o /app/publish
 
 
 FROM base AS final
