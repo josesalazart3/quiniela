@@ -7,21 +7,23 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
+using System.Net.Http.Headers;
 
 namespace Quiniela.Services
 {
     public class AuthService(IUserRepository userRepository, IRoleRepository roleRepository,
     IConfiguration config, CryptoHelper cryptoHelper, IUserSessionRepository sessionRepository, IPasswordResetTokenRepository passwordResetTokenRepository,
-    IEmailService emailService) : IAuthService
+    IEmailService emailService, IHttpClientFactory httpClientFactory) : IAuthService
     {
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IRoleRepository _roleRepository = roleRepository;
         private readonly IConfiguration _config = config;
         private readonly CryptoHelper _cryptoHelper = cryptoHelper;
         private readonly IUserSessionRepository _sessionRepository = sessionRepository;
-
         private readonly IPasswordResetTokenRepository _passwordResetTokenRepository = passwordResetTokenRepository;
         private readonly IEmailService _emailService = emailService;
+        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
 
 
@@ -167,6 +169,97 @@ namespace Quiniela.Services
 
             // Invalidar el token usado
             await _passwordResetTokenRepository.InvalidateTokenAsync(resetToken.Id);
+        }
+
+        public async Task<LoginResponseDto> GitHubLoginAsync(string code, string ipOrigen, string userAgent)
+        {
+            var accessToken = await ExchangeGithubCodeAsync(code);
+            var (email, firstName, lastName) = await GetGithubUserInfoAsync(accessToken);
+
+            var user = await _userRepository.GetByEmailWithRoleAsync(email);
+            if (user == null)
+            {
+                var newUser = new User
+                {
+                    Email = email,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
+                    RoleId = 2,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _userRepository.AddUserAsync(newUser);
+                user = await _userRepository.GetByEmailWithRoleAsync(email)!;
+            }
+
+            var jwtSetting = _config.GetSection("Jwt");
+            var expiresInMinutes = Convert.ToDouble(jwtSetting["ExpiresInMinutes"] ?? "60");
+
+            await _sessionRepository.CreateSessionAsync(new UserSession
+            {
+                UserId = user!.Id,
+                IpOrigen = ipOrigen,
+                UserAgent = userAgent,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(expiresInMinutes),
+                Estado = Enums.EstadoSesion.Activa
+            });
+
+            return new LoginResponseDto
+            {
+                Email = user.Email,
+                FullName = $"{user.FirstName} {user.LastName}".Trim(),
+                Role = new RoleDto { Name = user.Role?.Name ?? string.Empty },
+                Token = GenerateJwtToken(user)
+            };
+        }
+
+        private async Task<string> ExchangeGithubCodeAsync(string code)
+        {
+            var http = _httpClientFactory.CreateClient();
+            http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var response = await http.PostAsJsonAsync("https://github.com/login/oauth/access_token", new
+            {
+                client_id = _config["GitHub:ClientId"],
+                client_secret = _config["GitHub:ClientSecret"],
+                code
+            });
+
+            var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+            if (json.TryGetProperty("error", out var error))
+                throw new InvalidOperationException($"GitHub OAuth error: {error.GetString()}");
+
+            return json.GetProperty("access_token").GetString()
+                ?? throw new InvalidOperationException("GitHub no devolvió un access token");
+        }
+
+        private async Task<(string email, string firstName, string lastName)> GetGithubUserInfoAsync(string accessToken)
+        {
+            var http = _httpClientFactory.CreateClient();
+            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            http.DefaultRequestHeaders.UserAgent.TryParseAdd("QuinielaApp");
+
+            var userJson = await http.GetFromJsonAsync<JsonElement>("https://api.github.com/user");
+
+            var fullName = userJson.TryGetProperty("name", out var nameProp) ? nameProp.GetString() ?? "" : "";
+            if (string.IsNullOrWhiteSpace(fullName) && userJson.TryGetProperty("login", out var loginProp))
+                fullName = loginProp.GetString() ?? "GitHub User";
+
+            var parts = fullName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+            var firstName = parts.Length > 0 ? parts[0] : fullName;
+            var lastName = parts.Length > 1 ? parts[1] : "";
+
+            var emailsJson = await http.GetFromJsonAsync<JsonElement[]>("https://api.github.com/user/emails");
+            var email = emailsJson?
+                .Where(e => e.TryGetProperty("verified", out var v) && v.GetBoolean())
+                .OrderByDescending(e => e.TryGetProperty("primary", out var p) && p.GetBoolean())
+                .Select(e => e.TryGetProperty("email", out var em) ? em.GetString() : null)
+                .FirstOrDefault(e => e != null)
+                ?? throw new InvalidOperationException("No se encontró un email verificado en la cuenta de GitHub");
+
+            return (email, firstName, lastName);
         }
 
         private string GenerateJwtToken(User user)

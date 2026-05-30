@@ -1,7 +1,7 @@
 
 using MailKit.Net.Smtp;
 using MailKit.Security;
-using MimeKit;
+using MimeKit
 
 namespace Quiniela.Services
 {
@@ -10,37 +10,30 @@ namespace Quiniela.Services
         Task SendInvitacionLigaAsync(string emailDestino, string nombreLiga, string token);
         Task SendAprobacionMiembroAsync(string emailDestino, string nombreLiga);
         Task SendRecuperacionPasswordAsync(string emailDestino, string token);
-
     }
 
-    public class EmailService(IConfiguration config) : IEmailService
+    public class EmailService(IResend resend, IConfiguration config) : IEmailService
     {
+        private readonly IResend _resend = resend;
         private readonly IConfiguration _config = config;
+
+        private const string From = "Quiniela Mundial 2026 <noreply@uniondeprofesionales.com>";
 
         private async Task SendEmailAsync(string emailDestino, string subject, string htmlBody)
         {
-            var host = _config["Email:SmtpHost"] ?? "smtp.gmail.com";
-            var port = int.Parse(_config["Email:SmtpPort"] ?? "587");
-            var fromEmail = _config["Email:FromEmail"] ?? throw new InvalidOperationException("Email:FromEmail no configurado");
-            var fromName = _config["Email:FromName"] ?? "Quiniela Mundial 2026";
-            var password = _config["Email:Password"] ?? throw new InvalidOperationException("Email:Password no configurado");
+            var message = new EmailMessage
+            {
+                From = From,
+                Subject = subject,
+                HtmlBody = htmlBody
+            };
+            message.To.Add(emailDestino);
 
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(fromName, fromEmail));
-            message.To.Add(new MailboxAddress(emailDestino, emailDestino));
-            message.Subject = subject;
-            message.Body = new TextPart("html") { Text = htmlBody };
-
-            using var client = new SmtpClient();
-            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(fromEmail, password);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+            await _resend.EmailSendAsync(message);
         }
 
         public async Task SendInvitacionLigaAsync(string emailDestino, string nombreLiga, string token)
         {
-            //var frontendUrl = _config["Cors:AllowedOrigin"] ?? "http://localhost";
             var frontendUrl = _config["Cors:AllowedOrigin"] ?? "https://frontend-quiniela.vercel.app";
             var link = $"{frontendUrl}/invitacion/responder?token={token}";
 
@@ -72,7 +65,6 @@ namespace Quiniela.Services
 
         public async Task SendAprobacionMiembroAsync(string emailDestino, string nombreLiga)
         {
-            //var frontendUrl = _config["Cors:AllowedOrigin"] ?? "http://localhost";
             var frontendUrl = _config["Cors:AllowedOrigin"] ?? "https://frontend-quiniela.vercel.app";
 
             await SendEmailAsync(
@@ -97,7 +89,6 @@ namespace Quiniela.Services
 
         public async Task SendRecuperacionPasswordAsync(string emailDestino, string token)
         {
-            //var frontendUrl = _config["Cors:AllowedOrigin"] ?? "http://localhost";
             var frontendUrl = _config["Cors:AllowedOrigin"] ?? "https://frontend-quiniela.vercel.app";
             var link = $"{frontendUrl}/recuperar-password?token={token}";
 
@@ -105,25 +96,25 @@ namespace Quiniela.Services
                 emailDestino,
                 "Recuperación de contraseña — Quiniela Mundial 2026",
                 $@"
-            <h2>Recuperación de contraseña</h2>
-            <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
-            <p>Haz clic en el siguiente enlace para crear una nueva contraseña:</p>
-            <a href='{link}' style='
-                display: inline-block;
-                padding: 12px 24px;
-                background-color: #4F46E5;
-                color: white;
-                text-decoration: none;
-                border-radius: 6px;
-                font-weight: bold;
-            '>Restablecer contraseña</a>
-            <p style='color: #666; font-size: 12px; margin-top: 16px;'>
-                Si no puedes hacer clic, copia este link: {link}
-            </p>
-            <p style='color: #666; font-size: 12px;'>
-                Este link expira en 1 hora. Si no solicitaste esto, ignora este correo.
-            </p>
-        "
+                    <h2>Recuperación de contraseña</h2>
+                    <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
+                    <p>Haz clic en el siguiente enlace para crear una nueva contraseña:</p>
+                    <a href='{link}' style='
+                        display: inline-block;
+                        padding: 12px 24px;
+                        background-color: #4F46E5;
+                        color: white;
+                        text-decoration: none;
+                        border-radius: 6px;
+                        font-weight: bold;
+                    '>Restablecer contraseña</a>
+                    <p style='color: #666; font-size: 12px; margin-top: 16px;'>
+                        Si no puedes hacer clic, copia este link: {link}
+                    </p>
+                    <p style='color: #666; font-size: 12px;'>
+                        Este link expira en 1 hora. Si no solicitaste esto, ignora este correo.
+                    </p>
+                "
             );
         }
     }

@@ -8,10 +8,11 @@ namespace Quiniela.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class AuthController(IAuthService authService, CryptoHelper cryptoHelper) : ControllerBase
+    public class AuthController(IAuthService authService, CryptoHelper cryptoHelper, IConfiguration config) : ControllerBase
     {
         private readonly IAuthService _authService = authService;
         private readonly CryptoHelper _cryptoHelper = cryptoHelper;
+        private readonly IConfiguration _config = config;
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
@@ -93,6 +94,45 @@ namespace Quiniela.Controllers
         {
             await _authService.RecoverPasswordAsync(dto);
             return Ok(new { message = "Contraseña actualizada correctamente" });
+        }
+
+        [HttpGet("github")]
+        public IActionResult GitHubLogin()
+        {
+            var clientId = _config["GitHub:ClientId"]
+                ?? throw new InvalidOperationException("GitHub:ClientId no configurado");
+            var callbackUrl = _config["GitHub:CallbackUrl"]
+                ?? "https://quiniela-production-62e5.up.railway.app/api/v1/auth/github/callback";
+
+            var url = $"https://github.com/login/oauth/authorize" +
+                      $"?client_id={clientId}" +
+                      $"&redirect_uri={Uri.EscapeDataString(callbackUrl)}" +
+                      $"&scope=user:email";
+
+            return Redirect(url);
+        }
+
+        [HttpGet("github/callback")]
+        public async Task<IActionResult> GitHubCallback([FromQuery] string? code, [FromQuery] string? error)
+        {
+            var frontendUrl = _config["Cors:AllowedOrigin"] ?? "https://frontend-quiniela.vercel.app";
+            var redirectBase = $"{frontendUrl}/auth/github/callback";
+
+            if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code))
+                return Redirect($"{redirectBase}?error={Uri.EscapeDataString(error ?? "acceso denegado")}");
+
+            try
+            {
+                var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                var userAgent = Request.Headers.UserAgent.ToString();
+
+                var result = await _authService.GitHubLoginAsync(code, ip, userAgent);
+                return Redirect($"{redirectBase}?token={result.Token}");
+            }
+            catch (Exception ex)
+            {
+                return Redirect($"{redirectBase}?error={Uri.EscapeDataString(ex.Message)}");
+            }
         }
     }
 }
